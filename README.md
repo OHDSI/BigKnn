@@ -67,7 +67,7 @@ install_github("ohdsi/BigKnn")
 
 Getting Involved
 =============
-* Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/DatabaseConnector/master/extras/BigKnn.pdf) 
+* Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/BigKnn/master/extras/BigKnn.pdf) 
 * Developer questions/comments/feedback: <a href="http://forums.ohdsi.org/c/developers">OHDSI Forum</a>
 * We use the <a href="../../issues">GitHub issue tracker</a> for all bugs/issues/enhancements
 

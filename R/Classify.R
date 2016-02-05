@@ -61,6 +61,8 @@ predictKnn <- function(covariates,
   }
   knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
   knn$openForReading();
+  knn$setK(as.integer(k))
+  knn$setWeighted(weighted)
   i = bit::chunk(covariates)[[1]]
   result <- data.frame()
   for (i in bit::chunk(covariates)){

@@ -18,7 +18,9 @@ buildKnn(outcomes = outcomes,
          indexFolder = indexFolder)
            
 
-prediction <- predictKnn(covariates = ff::as.ffdf(covariates),
+prediction <- predictKnn(covariates = covariates,
                          indexFolder = indexFolder,
                          k = 10,
                          weighted = TRUE)
+
+prediction
