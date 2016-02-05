@@ -109,9 +109,9 @@ public class LuceneKnn {
 				System.arraycopy(covariateIds, 0, tempCovariateIds, 0, cursor);
 				System.arraycopy(covariateValues, 0, tempCovariateValues, 0, cursor);
 			}
+			addDoc(cache.rowId, tempCovariateIds, tempCovariateValues, 0, tempCovariateIds.length);
 			cache = null;
 			start = cursor;
-			addDoc(cache.rowId, tempCovariateIds, tempCovariateValues, 0, tempCovariateIds.length);
 		}
 		double rowId = rowIds[cursor];
 		while (cursor < covariateIds.length) {
@@ -185,11 +185,11 @@ public class LuceneKnn {
 				System.arraycopy(covariateIds, 0, tempCovariateIds, 0, cursor);
 				System.arraycopy(covariateValues, 0, tempCovariateValues, 0, cursor);
 			}
-			cache = null;
-			start = cursor;
 			outRowIds.add(cache.rowId);
 			double prediction = predictDoc(tempCovariateIds, tempCovariateValues, 0, tempCovariateIds.length);
 			outPredictions.add(prediction);
+			cache = null;
+			start = cursor;
 		}
 		double rowId = rowIds[cursor];
 		while (cursor < covariateIds.length) {
