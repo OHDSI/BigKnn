@@ -54,6 +54,7 @@ buildKnn <- function(outcomes,
                      checkSorting = TRUE,
                      checkRowIds = TRUE,
                      quiet = FALSE) {
+  start <- Sys.time()
   if (checkSorting){
     if (!Cyclops::isSorted(covariates, c("rowId"))){
       if(!quiet) {
@@ -78,14 +79,20 @@ buildKnn <- function(outcomes,
   t <- (outcomes$y == 1)
   nonZeroOutcomeRowIds <- outcomes$rowId[ffbase::ffwhich(t, t == TRUE)]
 
-  for (i in bit::chunk(nonZeroOutcomeRowIds)){
+  for (i in bit::chunk(nonZeroOutcomeRowIds, by = 100000)){
     knn$addNonZeroOutcomes(rJava::.jarray(nonZeroOutcomeRowIds[i]))
   }
-  for (i in bit::chunk(covariates)){
-    knn$addCovariates(rJava::.jarray(covariates$rowId[i]), 
-                      rJava::.jarray(covariates$covariateId[i]),
-                      rJava::.jarray(covariates$covariateValue[i]))
+  chunks <- bit::chunk(covariates, by = 100000)
+  pb <- txtProgressBar(style = 3)
+  for (i in 1:length(chunks)){
+    knn$addCovariates(rJava::.jarray(covariates$rowId[chunks[[i]]]), 
+                      rJava::.jarray(covariates$covariateId[chunks[[i]]]),
+                      rJava::.jarray(covariates$covariateValue[chunks[[i]]]))
+    setTxtProgressBar(pb, i/length(chunks))
   }
   knn$finalizeWriting()
+  close(pb)
+  delta <- Sys.time() - start
+  writeLines(paste("Building KNN index took", signif(delta, 3), attr(delta, "units")))
 }
 

@@ -50,6 +50,7 @@ predictKnn <- function(covariates,
                        weighted = TRUE,
                        checkSorting = TRUE,
                        quiet = FALSE) {
+  start <- Sys.time()
   if (checkSorting){
     if (!Cyclops::isSorted(covariates, c("rowId"))){
       if(!quiet) {
@@ -63,19 +64,24 @@ predictKnn <- function(covariates,
   knn$openForReading();
   knn$setK(as.integer(k))
   knn$setWeighted(weighted)
-  i = bit::chunk(covariates)[[1]]
   result <- data.frame()
-  for (i in bit::chunk(covariates)){
-    prediction <- knn$predict(rJava::.jarray(covariates$rowId[i]), 
-                              rJava::.jarray(covariates$covariateId[i]),
-                              rJava::.jarray(covariates$covariateValue[i]))
+  chunks <- bit::chunk(covariates, by = 100000)
+  pb <- txtProgressBar(style = 3)
+  for (i in 1:length(chunks)){
+    prediction <- knn$predict(rJava::.jarray(covariates$rowId[chunks[[i]]]), 
+                              rJava::.jarray(covariates$covariateId[chunks[[i]]]),
+                              rJava::.jarray(covariates$covariateValue[chunks[[i]]]))
     prediction <- lapply(prediction, rJava::.jevalArray)
-    prediction <- data.frame(rowId = prediction[[1]], prediction = prediction[[2]])
+    prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
     result <- rbind(result, prediction)
+    setTxtProgressBar(pb, i/length(chunks))
   }
   prediction <- knn$finalizePredict()
   prediction <- lapply(prediction, rJava::.jevalArray)
-  prediction <- data.frame(rowId = prediction[[1]], prediction = prediction[[2]])
+  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
   result <- rbind(result, prediction)
+  close(pb)
+  delta <- Sys.time() - start
+  writeLines(paste("Prediction took", signif(delta, 3), attr(delta, "units")))
   return(result)
 }
