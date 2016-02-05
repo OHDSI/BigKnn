@@ -1,0 +1,14 @@
+Package: BigKnn
+Type: Package
+Title: Large Scale K-Nearest Neighbor Classifier using the Lucene Search Engine.
+Version: 0.0.1
+Date: 2016-02-05
+Author: Martijn J. Schuemie
+Maintainer: Martijn Schuemie <schuemie@ohdsi.org>
+Description: A large scale k-nearest neighbor classifier using the Lucene search engine.
+Imports:
+    rJava,
+    Cyclops,
+    PatientLevelPrediction
+License: Apache License
+RoxygenNote: 5.0.1

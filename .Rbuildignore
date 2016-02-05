@@ -1,0 +1,5 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.travis\.yml$
+R/LocalEnvironment.R
+deploy.sh
