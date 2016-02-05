@@ -11,11 +11,13 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -37,6 +39,7 @@ public class LuceneKnn {
 	private Set<Long>			nonZeroOutcomes;
 	private int					k			= 100;
 	private boolean				weighted	= true;
+	private FieldType docAndFreqIndexed;
 
 	public LuceneKnn(String indexFolder) {
 		this.indexFolder = indexFolder;
@@ -70,6 +73,13 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 		nonZeroOutcomes = new HashSet<Long>();
+		
+		docAndFreqIndexed = new FieldType();
+		docAndFreqIndexed.setOmitNorms(false);
+		docAndFreqIndexed.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
+		docAndFreqIndexed.setStored(false);
+		docAndFreqIndexed.setTokenized(true);
+		docAndFreqIndexed.freeze();
 	}
 
 	public void close() {
@@ -154,7 +164,7 @@ public class LuceneKnn {
 					string.append(' ');
 				}
 			}
-			doc.add(new TextField("covariates", string.toString(), Store.NO));
+			doc.add(new Field("covariates", string.toString(), docAndFreqIndexed));
 			String classValue = (nonZeroOutcomes.contains(rowIdLong) ? "1" : "0");
 			doc.add(new StoredField("class", classValue));
 			writer.addDocument(doc);
