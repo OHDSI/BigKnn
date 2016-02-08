@@ -26,35 +26,40 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
 
 public class LuceneKnn {
-
+	
 	private String				indexFolder;
 	private IndexSearcher		searcher;
 	private IndexWriter			writer;
 	private DirectoryReader		reader;
 	private WhitespaceAnalyzer	analyzer	= new WhitespaceAnalyzer();
+	// private Similarity similarity = new LMJelinekMercerSimilarity(0.5f);
+	private Similarity			similarity	= new ClassicSimilarity();
 	private CovariateVector		cache;
 	private Set<Long>			nonZeroOutcomes;
 	private int					k			= 100;
 	private boolean				weighted	= true;
-	private FieldType docAndFreqIndexed;
-
+	private FieldType			docAndFreqIndexed;
+	
 	public LuceneKnn(String indexFolder) {
 		this.indexFolder = indexFolder;
 	}
-
+	
 	public void openForReading() {
 		try {
 			FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath(indexFolder));
 			reader = DirectoryReader.open(dir);
 			searcher = new IndexSearcher(reader);
+			searcher.setSimilarity(similarity);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public void openForWriting(boolean overwrite) {
 		try {
 			if (new File(indexFolder).exists()) {
@@ -66,6 +71,7 @@ public class LuceneKnn {
 			}
 			FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath(indexFolder));
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+			iwc.setSimilarity(similarity);
 			iwc.setOpenMode(OpenMode.CREATE);
 			iwc.setRAMBufferSizeMB(256.0);
 			writer = new IndexWriter(dir, iwc);
@@ -81,7 +87,7 @@ public class LuceneKnn {
 		docAndFreqIndexed.setTokenized(true);
 		docAndFreqIndexed.freeze();
 	}
-
+	
 	public void close() {
 		try {
 			if (writer != null)
@@ -92,21 +98,21 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public void addNonZeroOutcomes(double[] rowIds) {
 		for (int i = 0; i < rowIds.length; i++)
 			nonZeroOutcomes.add(Math.round(rowIds[i]));
 	}
-
+	
 	public void addCovariates(double[] rowIds, double[] covariateIds, double[] covariateValues) {
 		if (rowIds.length == 0)
 			return;
 		if (nonZeroOutcomes.size() == 0)
 			throw new RuntimeException("No outcomes found. Please load the outcomes before loading the covariates.");
-
+		
 		int cursor = 0;
 		int start = 0;
-
+		
 		// Check to see if anythings left in the cache from the previous round:
 		if (cache != null) {
 			while (rowIds[cursor] == cache.rowId)
@@ -139,7 +145,7 @@ public class LuceneKnn {
 		System.arraycopy(covariateIds, start, cache.covariateIds, 0, cursor - start);
 		System.arraycopy(covariateValues, start, cache.covariateValues, 0, cursor - start);
 	}
-
+	
 	public void finalizeWriting() {
 		addDoc(cache.rowId, cache.covariateIds, cache.covariateValues, 0, cache.covariateIds.length);
 		nonZeroOutcomes = null;
@@ -151,7 +157,7 @@ public class LuceneKnn {
 		writer = null;
 		System.gc();
 	}
-
+	
 	private void addDoc(double rowId, double[] covariateIds, double[] covariateValues, int start, int end) {
 		try {
 			long rowIdLong = Math.round(rowId);
@@ -172,17 +178,17 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public double[][] predict(double[] rowIds, double[] covariateIds, double[] covariateValues) {
 		if (rowIds.length == 0)
 			return new double[][] { new double[0], new double[0] };
-
+		
 		List<Double> outRowIds = new ArrayList<Double>();
 		List<Double> outPredictions = new ArrayList<Double>();
-
+		
 		int cursor = 0;
 		int start = 0;
-
+		
 		// Check to see if anythings left in the cache from the previous round:
 		if (cache != null) {
 			while (rowIds[cursor] == cache.rowId)
@@ -225,7 +231,7 @@ public class LuceneKnn {
 		}
 		return result;
 	}
-
+	
 	public double[][] finalizePredict() {
 		double prediction = predictDoc(cache.covariateIds, cache.covariateValues, 0, cache.covariateIds.length);
 		double rowId = cache.rowId;
@@ -238,7 +244,7 @@ public class LuceneKnn {
 		System.gc();
 		return new double[][] { new double[] { rowId }, new double[] { prediction } };
 	}
-
+	
 	private double predictDoc(double[] covariateIds, double[] covariateValues, int start, int end) {
 		try {
 			TopScoreDocCollector collector = TopScoreDocCollector.create(getK());
@@ -273,36 +279,39 @@ public class LuceneKnn {
 						negScore++;
 				}
 			}
-			return posScore / (posScore + negScore);
+			if (posScore + negScore == 0)
+				return 0;
+			else
+				return posScore / (posScore + negScore);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public String getIndexFolder() {
 		return indexFolder;
 	}
-
+	
 	public void setIndexFolder(String indexFolder) {
 		this.indexFolder = indexFolder;
 	}
-
+	
 	public int getK() {
 		return k;
 	}
-
+	
 	public void setK(int k) {
 		this.k = k;
 	}
-
+	
 	public boolean isWeighted() {
 		return weighted;
 	}
-
+	
 	public void setWeighted(boolean weighted) {
 		this.weighted = weighted;
 	}
-
+	
 	private class CovariateVector {
 		public double[]	covariateIds;
 		public double[]	covariateValues;

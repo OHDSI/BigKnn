@@ -108,8 +108,9 @@ buildKnnFromPlpData(plpData = plpData, indexFolder = indexFolder)
 plpData <- loadPlpData("S:/Temp/PlpVignette/plpData_test")  
 
 prediction <- predictKnnUsingPlpData(indexFolder = indexFolder,
-                                     k = 10000,
+                                     k = 1000,
                                      weighted = TRUE,
-                                     plpData)
+                                     plpData,
+                                     threads = 30)
 attr(prediction, "modelType") <- "logistic"
 computeAuc(prediction, plpData)

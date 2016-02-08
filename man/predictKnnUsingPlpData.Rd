@@ -4,7 +4,8 @@
 \alias{predictKnnUsingPlpData}
 \title{Create predictive probabilities using KNN.}
 \usage{
-predictKnnUsingPlpData(indexFolder, k = 1000, weighted = TRUE, plpData)
+predictKnnUsingPlpData(indexFolder, k = 1000, weighted = TRUE,
+  threads = 10, plpData)
 }
 \arguments{
 \item{indexFolder}{Path to a local folder where the KNN classifier index is be stored.}
@@ -12,6 +13,8 @@ predictKnnUsingPlpData(indexFolder, k = 1000, weighted = TRUE, plpData)
 \item{k}{The number of nearest neighbors to use to predict the outcome.}
 
 \item{weighted}{Should the prediction be weigthed by the (inverse of the ) distance metric?}
+
+\item{threads}{Number of parallel threads to used for the computation.}
 
 \item{plpData}{An object of type \code{plpData} as generated using
 \code{\link{getDbPlpData}}.}

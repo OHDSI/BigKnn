@@ -25,6 +25,7 @@
 #' @param weighted      Should the prediction be weigthed by the (inverse of the ) distance metric?
 #' @param checkSorting  Check if the data are sorted appropriately, and if not, sort.
 #' @param quiet         If true, (warning) messages are surpressed.
+#' @param threads       Number of parallel threads to used for the computation.
 #'
 #' @details
 #' These columns are expected in the covariates object:
@@ -49,7 +50,8 @@ predictKnn <- function(covariates,
                        k = 1000,
                        weighted = TRUE,
                        checkSorting = TRUE,
-                       quiet = FALSE) {
+                       quiet = FALSE,
+                       threads = 1) {
   start <- Sys.time()
   if (checkSorting){
     if (!Cyclops::isSorted(covariates, c("rowId"))){
@@ -60,28 +62,47 @@ predictKnn <- function(covariates,
       covariates <- covariates[ff::ffdforder(covariates[c("rowId")]),]
     }
   }
-  knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
-  knn$openForReading();
-  knn$setK(as.integer(k))
-  knn$setWeighted(weighted)
-  result <- data.frame()
-  chunks <- bit::chunk(covariates, by = 100000)
-  pb <- txtProgressBar(style = 3)
-  for (i in 1:length(chunks)){
-    prediction <- knn$predict(rJava::.jarray(covariates$rowId[chunks[[i]]]), 
-                              rJava::.jarray(covariates$covariateId[chunks[[i]]]),
-                              rJava::.jarray(covariates$covariateValue[chunks[[i]]]))
+  predictionThread <- function(chunk, indexFolder, k, weighted, covariates, needToOpen) {
+    if (needToOpen) {
+      ff::open.ffdf(covariates, readonly = TRUE)
+    }
+    knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
+    knn$openForReading();
+    knn$setK(as.integer(k))
+    knn$setWeighted(weighted)
+    result <- data.frame()
+    for (i in bit::chunk(from = chunk[1], to = chunk[2], by = 100000)){
+      prediction <- knn$predict(rJava::.jarray(covariates$rowId[i]), 
+                                rJava::.jarray(covariates$covariateId[i]),
+                                rJava::.jarray(covariates$covariateValue[i]))
+      prediction <- lapply(prediction, rJava::.jevalArray)
+      prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+      result <- rbind(result, prediction)
+    }
+    prediction <- knn$finalizePredict()
     prediction <- lapply(prediction, rJava::.jevalArray)
     prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
     result <- rbind(result, prediction)
-    setTxtProgressBar(pb, i/length(chunks))
+    if (needToOpen) {
+      ff::close.ffdf(covariates)
+    }
+    return(result)
   }
-  prediction <- knn$finalizePredict()
-  prediction <- lapply(prediction, rJava::.jevalArray)
-  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-  result <- rbind(result, prediction)
-  close(pb)
+  cluster <- OhdsiRTools::makeCluster(threads)
+  OhdsiRTools::clusterRequire(cluster, "BigKnn")
+  chunks <- bit::chunk(covariates, length.out = threads)
+  needToOpen <- (threads > 1)
+  results <- OhdsiRTools::clusterApply(cluster = cluster, 
+                                      x = chunks, 
+                                      fun = predictionThread, 
+                                      indexFolder = indexFolder, 
+                                      k = k, 
+                                      weighted = weighted, 
+                                      covariates = covariates,
+                                      needToOpen = needToOpen)
+  OhdsiRTools::stopCluster(cluster)
+  results <- do.call(rbind, results)
   delta <- Sys.time() - start
   writeLines(paste("Prediction took", signif(delta, 3), attr(delta, "units")))
-  return(result)
+  return(results)
 }

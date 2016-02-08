@@ -9,6 +9,7 @@ Description: A large scale k-nearest neighbor classifier using the Lucene search
 Imports:
     rJava,
     Cyclops,
-    PatientLevelPrediction
+    PatientLevelPrediction,
+    OhdsiRTools
 License: Apache License
 RoxygenNote: 5.0.1

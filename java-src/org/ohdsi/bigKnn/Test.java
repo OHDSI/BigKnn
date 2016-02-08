@@ -9,7 +9,7 @@ public class Test {
 		
 		double[] nonZeroRowIds = new double[]{1};
 		
-		LuceneKnn luceneKnn = new LuceneKnn("s:/temp/Lucene");
+		LuceneKnn luceneKnn = new LuceneKnn("s:/temp/Lucene2");
 		luceneKnn.openForWriting(true);
 		luceneKnn.addNonZeroOutcomes(nonZeroRowIds);
 		luceneKnn.addCovariates(covRowIds, covCovariateIds, covCovariateValues);

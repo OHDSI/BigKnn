@@ -133,12 +133,14 @@ buildKnnFromPlpData <- function(plpData,
 #' @param indexFolder   Path to a local folder where the KNN classifier index is be stored.
 #' @param k             The number of nearest neighbors to use to predict the outcome.
 #' @param weighted      Should the prediction be weigthed by the (inverse of the ) distance metric?
+#' @param threads       Number of parallel threads to used for the computation.
 #' @param plpData           An object of type \code{plpData} as generated using
 #'                          \code{\link{getDbPlpData}}.
 #' @export
 predictKnnUsingPlpData <- function(indexFolder, 
                                    k = 1000,
                                    weighted = TRUE,
+                                   threads = 10,
                                    plpData) {
   
   covariates <- plpData$covariates
@@ -178,7 +180,8 @@ predictKnnUsingPlpData <- function(indexFolder,
   prediction <- predictKnn(covariates = covariates,
                            indexFolder = indexFolder,
                            k = k,
-                           weighted = weighted)
+                           weighted = weighted,
+                           threads = threads)
   return(prediction)
 }
 

@@ -5,7 +5,7 @@
 \title{Predict using a K-nearest neighbor (KNN) classifier}
 \usage{
 predictKnn(covariates, indexFolder, k = 1000, weighted = TRUE,
-  checkSorting = TRUE, quiet = FALSE)
+  checkSorting = TRUE, quiet = FALSE, threads = 1)
 }
 \arguments{
 \item{covariates}{A ffdf object containing the covariates with predefined columns (see below).}
@@ -19,6 +19,8 @@ predictKnn(covariates, indexFolder, k = 1000, weighted = TRUE,
 \item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
 
 \item{quiet}{If true, (warning) messages are surpressed.}
+
+\item{threads}{Number of parallel threads to used for the computation.}
 }
 \value{
 A data.frame with two columns:
