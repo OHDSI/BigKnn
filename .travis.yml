@@ -38,9 +38,9 @@ install:
   - echo 'drat::addRepo("OHDSI")' >> .Rprofile    
   # Install R packages
   - Rscript -e "if (!require('devtools')) install.packages('devtools')"    
-  - Rscript -e "if (!require('covr')) devtools::install_github('jimhester/covr')"  
-  - Rscript -e "if (!require('rmarkdown')) install.packages('rmarkdown')"
-  - Rscript -e "if (!require('knitr')) install.packages('knitr')"       
+#  - Rscript -e "if (!require('covr')) devtools::install_github('jimhester/covr')"  
+#  - Rscript -e "if (!require('rmarkdown')) install.packages('rmarkdown')"
+#  - Rscript -e "if (!require('knitr')) install.packages('knitr')"       
   - Rscript -e "if (!require('rJava')) install.packages('rJava')"
   - Rscript -e "if (!require('PatientLevelPrediction')) install.packages('PatientLevelPrediction')"  # Using drat, should install dependencies
   - Rscript -e "if (!require('OhdsiRTools')) install.packages('OhdsiRTools')"
@@ -54,7 +54,7 @@ script:
   - cat ${PKG_NAME}.Rcheck/00install.out # Print out install / compile log 
 
 after_success:
-  - Rscript -e 'covr::codecov()'
+#  - Rscript -e 'covr::codecov()'
   # Rebuild docker container
   - curl --data "build=true" -X POST https://registry.hub.docker.com/u/ohdsi/development/trigger/e51f720d-c4e7-45df-b042-5d8a362bd7e0/
   # Rebuild drat repo   
