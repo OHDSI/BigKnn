@@ -80,4 +80,7 @@ Development
 BigKnn is being developed in R Studio and Eclipse
 
 ###Development status
+[![Build Status](https://travis-ci.org/OHDSI/BigKnn.svg?branch=master)](https://travis-ci.org/OHDSI/BigKnn)
+[![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
+
 Under development. Use at your own risk.
