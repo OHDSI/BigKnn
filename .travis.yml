@@ -12,6 +12,8 @@ addons:
     - r-recommended
     - texinfo
     - qpdf
+    - default-jdk
+    - default-jre
     
 cache:
   directories:
