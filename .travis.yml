@@ -61,7 +61,7 @@ after_success:
   - curl --data "build=true" -X POST https://registry.hub.docker.com/u/ohdsi/development/trigger/e51f720d-c4e7-45df-b042-5d8a362bd7e0/
   # Rebuild drat repo   
   - export PKG_TARBALL=$(Rscript -e 'pkg <- devtools::as.package("."); cat(paste0(pkg$package,"_",pkg$version,".tar.gz"))')    
-  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy_container.sh
+  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
   
 notifications:
   recipients:
