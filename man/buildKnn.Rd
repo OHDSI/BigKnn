@@ -29,19 +29,13 @@ Nothing
 \code{buildKnn} loads data from two ffdf objects, and inserts them into a KNN classifier.
 }
 \details{
-These columns are expected in the outcome object:
-\tabular{lll}{
-  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
-  \verb{y}    \tab(real) \tab The outcome variable \cr
-}
-
-These columns are expected in the covariates object:
-\tabular{lll}{
-  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
-  \verb{covariateId}    \tab(integer) \tab A numeric identifier of a covariate  \cr
-  \verb{covariateValue}    \tab(real) \tab The value of the specified covariate \cr
-}
-
+These columns are expected in the outcome object: \tabular{lll}{ \verb{rowId} \tab(integer) \tab
+Row ID is used to link multiple covariates (x) to a single outcome (y) \cr \verb{y} \tab(real) \tab
+The outcome variable \cr }
+These columns are expected in the covariates object: \tabular{lll}{ \verb{rowId} \tab(integer) \tab
+Row ID is used to link multiple covariates (x) to a single outcome (y) \cr \verb{covariateId}
+\tab(integer) \tab A numeric identifier of a covariate \cr \verb{covariateValue} \tab(real) \tab
+The value of the specified covariate \cr }
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 }
 

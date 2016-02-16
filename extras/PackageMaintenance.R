@@ -1,7 +1,7 @@
 # Format and check code:
 OhdsiRTools::formatRFolder()
 OhdsiRTools::checkUsagePackage("BigKnn")
-
+OhdsiRTools::updateCopyrightYearFolder()
 
 # Create manual:
 shell("rm extras/BigKnn.pdf")

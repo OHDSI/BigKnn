@@ -25,27 +25,20 @@ predictKnn(covariates, cohorts, indexFolder, k = 1000, weighted = TRUE,
 \item{threads}{Number of parallel threads to used for the computation.}
 }
 \value{
-A data.frame with two columns:
-\tabular{lll}{
-  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
-  \verb{prediction}    \tab(real) \tab A number between 0 and 1 representing the probability of the outcome  \cr
-}
+A data.frame with two columns: \tabular{lll}{ \verb{rowId} \tab(integer) \tab Row ID is used to
+link multiple covariates (x) to a single outcome (y) \cr \verb{prediction} \tab(real) \tab A number
+between 0 and 1 representing the probability of the outcome \cr }
 }
 \description{
 \code{predictKnn} uses a KNN classifier to generate predictions.
 }
 \details{
-These columns are expected in the covariates object:
-\tabular{lll}{
-  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
-  \verb{covariateId}    \tab(integer) \tab A numeric identifier of a covariate  \cr
-  \verb{covariateValue}    \tab(real) \tab The value of the specified covariate \cr
-}
-This column is expected in the covariates object:
-\tabular{lll}{
-  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
-}
-
+These columns are expected in the covariates object: \tabular{lll}{ \verb{rowId} \tab(integer) \tab
+Row ID is used to link multiple covariates (x) to a single outcome (y) \cr \verb{covariateId}
+\tab(integer) \tab A numeric identifier of a covariate \cr \verb{covariateValue} \tab(real) \tab
+The value of the specified covariate \cr } This column is expected in the covariates object:
+\tabular{lll}{ \verb{rowId} \tab(integer) \tab Row ID is used to link multiple covariates (x) to a
+single outcome (y) \cr }
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 }
 

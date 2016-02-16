@@ -14,9 +14,9 @@ buildKnnFromPlpData(plpData, indexFolder, overwrite = TRUE,
 
 \item{overwrite}{Automatically overwrite if an index already exists?}
 
-\item{removeDropouts}{If TRUE subjects that do not have the full
-observation window (i.e. are censored earlier) and do not have the
-outcome are removed prior to fitting the model.}
+\item{removeDropouts}{If TRUE subjects that do not have the full observation window (i.e. are
+censored earlier) and do not have the outcome are removed prior to fitting
+the model.}
 
 \item{cohortId}{The ID of the specific cohort for which to fit a model.}
 

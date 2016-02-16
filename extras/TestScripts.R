@@ -1,12 +1,11 @@
 options(fftempdir = "s:/temp")
 
-covariates <- data.frame(rowIds = c(1,1,1,2,2,3),
-                         covariateIds = c(10,11,12,10,11,12),
-                         covariateValues = c(1,1,1,1,1,1))
-cohorts <- data.frame(rowIds = c(1,2,3))
+covariates <- data.frame(rowIds = c(1, 1, 1, 2, 2, 3),
+                         covariateIds = c(10, 11, 12, 10, 11, 12),
+                         covariateValues = c(1, 1, 1, 1, 1, 1))
+cohorts <- data.frame(rowIds = c(1, 2, 3))
 
-outcomes <- data.frame(rowIds = c(1,2,3),
-                       y = c(1,0,0))
+outcomes <- data.frame(rowIds = c(1, 2, 3), y = c(1, 0, 0))
 
 indexFolder <- "s:/temp/lucene3"
 
@@ -14,9 +13,7 @@ covariates <- ff::as.ffdf(covariates)
 outcomes <- ff::as.ffdf(outcomes)
 
 
-buildKnn(outcomes = outcomes,
-         covariates = covariates,
-         indexFolder = indexFolder)
+buildKnn(outcomes = outcomes, covariates = covariates, indexFolder = indexFolder)
 
 
 prediction <- predictKnn(covariates = ff::as.ffdf(covariates),
@@ -54,8 +51,8 @@ outcomes$y <- ff::ffindexset(x = outcomes$y,
                              value = ff::ff(0, length = length(idx), vmode = "double"))
 
 covariates <- plpData$covariates
-rownames(covariates) <- NULL #Needs to be null or the ordering of ffdf will fail
-covariates <- covariates[ff::ffdforder(covariates[c("rowId")]),]
+rownames(covariates) <- NULL  #Needs to be null or the ordering of ffdf will fail
+covariates <- covariates[ff::ffdforder(covariates[c("rowId")]), ]
 ffbase::save.ffdf(covariates, dir = "s:/temp/covariates")
 ffbase::save.ffdf(outcomes, dir = "s:/temp/outcomes")
 
@@ -82,8 +79,8 @@ outcomes$y <- ff::ffindexset(x = outcomes$y,
                              value = ff::ff(0, length = length(idx), vmode = "double"))
 
 covariates <- plpData$covariates
-rownames(covariates) <- NULL #Needs to be null or the ordering of ffdf will fail
-covariates <- covariates[ff::ffdforder(covariates[c("rowId")]),]
+rownames(covariates) <- NULL  #Needs to be null or the ordering of ffdf will fail
+covariates <- covariates[ff::ffdforder(covariates[c("rowId")]), ]
 
 ffbase::save.ffdf(covariates, dir = "s:/temp/covariates2")
 ffbase::save.ffdf(outcomes, dir = "s:/temp/outcomes2")
@@ -107,7 +104,7 @@ plpData <- loadPlpData("S:/Temp/PlpVignette/plpData_train")
 
 buildKnnFromPlpData(plpData = plpData, indexFolder = indexFolder)
 
-plpData <- loadPlpData("S:/Temp/PlpVignette/plpData_test")  
+plpData <- loadPlpData("S:/Temp/PlpVignette/plpData_test")
 
 prediction <- predictKnnUsingPlpData(indexFolder = indexFolder,
                                      k = 1000,
