@@ -28,7 +28,7 @@
 #' @export
 buildKnnFromPlpData <- function(plpData,
                                 indexFolder,
-                                overWrite = TRUE,
+                                overwrite = TRUE,
                                 removeDropouts = TRUE,
                                 cohortId = NULL,
                                 outcomeId = NULL) {
@@ -116,7 +116,8 @@ buildKnnFromPlpData <- function(plpData,
   
   buildKnn(outcomes = outcomes,
            covariates = covariates,
-           indexFolder = indexFolder)
+           indexFolder = indexFolder,
+           overwrite = overwrite)
   
   invisible(indexFolder)
 }
@@ -134,8 +135,7 @@ buildKnnFromPlpData <- function(plpData,
 #' @param k             The number of nearest neighbors to use to predict the outcome.
 #' @param weighted      Should the prediction be weigthed by the (inverse of the ) distance metric?
 #' @param threads       Number of parallel threads to used for the computation.
-#' @param plpData           An object of type \code{plpData} as generated using
-#'                          \code{\link{getDbPlpData}}.
+#' @param plpData           An object of type \code{plpData} as generated using \code{getDbPlpData}.
 #' @export
 predictKnnUsingPlpData <- function(indexFolder, 
                                    k = 1000,
@@ -147,37 +147,26 @@ predictKnnUsingPlpData <- function(indexFolder,
   cohorts <- plpData$cohorts
   
   if (length(plpData$metaData$cohortIds) > 1) {
-    # Filter by cohort ID:
-    cohortId <- predictiveModel$cohortId
-    t <- cohorts$cohortId == cohortId
-    if (!ffbase::any.ff(t)) {
-      stop(paste("No cohorts with cohort ID", cohortId))
-    }
-    cohorts <- cohorts[ffbase::ffwhich(t, t == TRUE), ]
-    
-    idx <- ffbase::ffmatch(x = covariates$rowId, table = cohorts$rowId)
-    idx <- ffbase::ffwhich(idx, !is.na(idx))
-    covariates <- covariates[idx, ]
+    stop("Currently not supporting multiple cohort IDs")
   }
   
   if (!is.null(plpData$exclude) && nrow(plpData$exclude) != 0) {
+    if (length(plpData$metaData$outcomeIds) > 1) {
+      stop("Currently not supporting multiple outcome IDs")
+    }
     # Filter subjects with previous outcomes:
     exclude <- plpData$exclude
-    outcomeId <- predictiveModel$outcomeId
-    t <- exclude$outcomeId == outcomeId
+    t <- ffbase::ffmatch(x = cohorts$rowId, table = exclude$rowId, nomatch = 0L) > 0L
     if (ffbase::any.ff(t)) {
-      exclude <- exclude[ffbase::ffwhich(t, t == TRUE), ]
-      t <- ffbase::ffmatch(x = cohorts$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-      if (ffbase::any.ff(t)) {
-        cohorts <- cohorts[ffbase::ffwhich(t, t == FALSE), ]
-      }
-      t <- ffbase::ffmatch(x = covariates$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-      if (ffbase::any.ff(t)) {
-        covariates <- covariates[ffbase::ffwhich(t, t == FALSE), ]
-      }
+      cohorts <- cohorts[ffbase::ffwhich(t, t == FALSE), ]
+    }
+    t <- ffbase::ffmatch(x = covariates$rowId, table = exclude$rowId, nomatch = 0L) > 0L
+    if (ffbase::any.ff(t)) {
+      covariates <- covariates[ffbase::ffwhich(t, t == FALSE), ]
     }
   }
   prediction <- predictKnn(covariates = covariates,
+                           cohorts = cohorts,
                            indexFolder = indexFolder,
                            k = k,
                            weighted = weighted,

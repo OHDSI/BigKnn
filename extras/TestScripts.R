@@ -3,11 +3,12 @@ options(fftempdir = "s:/temp")
 covariates <- data.frame(rowIds = c(1,1,1,2,2,3),
                          covariateIds = c(10,11,12,10,11,12),
                          covariateValues = c(1,1,1,1,1,1))
+cohorts <- data.frame(rowIds = c(1,2,3))
 
 outcomes <- data.frame(rowIds = c(1,2,3),
                        y = c(1,0,0))
 
-indexFolder <- "s:/temp/lucene"
+indexFolder <- "s:/temp/lucene3"
 
 covariates <- ff::as.ffdf(covariates)
 outcomes <- ff::as.ffdf(outcomes)
@@ -19,6 +20,7 @@ buildKnn(outcomes = outcomes,
 
 
 prediction <- predictKnn(covariates = ff::as.ffdf(covariates),
+                         cohorts = ff::as.ffdf(cohorts),
                          indexFolder = indexFolder,
                          k = 10,
                          weighted = TRUE)
@@ -111,6 +113,7 @@ prediction <- predictKnnUsingPlpData(indexFolder = indexFolder,
                                      k = 1000,
                                      weighted = TRUE,
                                      plpData,
-                                     threads = 30)
+                                     threads = 10)
 attr(prediction, "modelType") <- "logistic"
 computeAuc(prediction, plpData)
+plotCalibration(prediction, plpData)

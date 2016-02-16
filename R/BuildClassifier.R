@@ -50,7 +50,7 @@
 buildKnn <- function(outcomes,
                      covariates,
                      indexFolder,
-                     overWrite = TRUE,
+                     overwrite = TRUE,
                      checkSorting = TRUE,
                      checkRowIds = TRUE,
                      quiet = FALSE) {
@@ -75,7 +75,7 @@ buildKnn <- function(outcomes,
     }
   }
   knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
-  knn$openForWriting(overWrite);
+  knn$openForWriting(overwrite);
   t <- (outcomes$y == 1)
   nonZeroOutcomeRowIds <- outcomes$rowId[ffbase::ffwhich(t, t == TRUE)]
 

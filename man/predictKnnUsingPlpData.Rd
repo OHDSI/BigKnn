@@ -16,8 +16,7 @@ predictKnnUsingPlpData(indexFolder, k = 1000, weighted = TRUE,
 
 \item{threads}{Number of parallel threads to used for the computation.}
 
-\item{plpData}{An object of type \code{plpData} as generated using
-\code{\link{getDbPlpData}}.}
+\item{plpData}{An object of type \code{plpData} as generated using \code{getDbPlpData}.}
 }
 \value{
 The value column in the result data.frame is: logistic: probabilities of the outcome, poisson:

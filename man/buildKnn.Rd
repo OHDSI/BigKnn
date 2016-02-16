@@ -4,7 +4,7 @@
 \alias{buildKnn}
 \title{Build a K-nearest neighbor (KNN) classifier}
 \usage{
-buildKnn(outcomes, covariates, indexFolder, overWrite = TRUE,
+buildKnn(outcomes, covariates, indexFolder, overwrite = TRUE,
   checkSorting = TRUE, checkRowIds = TRUE, quiet = FALSE)
 }
 \arguments{
@@ -14,13 +14,13 @@ buildKnn(outcomes, covariates, indexFolder, overWrite = TRUE,
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
+\item{overwrite}{Automatically overwrite if an index already exists?}
+
 \item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
 
 \item{checkRowIds}{Check if all rowIds in the covariates appear in the outcomes.}
 
 \item{quiet}{If true, (warning) messages are surpressed.}
-
-\item{overwrite}{Automatically overwrite if an index already exists?}
 }
 \value{
 Nothing

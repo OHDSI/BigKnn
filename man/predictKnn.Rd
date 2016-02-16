@@ -4,11 +4,13 @@
 \alias{predictKnn}
 \title{Predict using a K-nearest neighbor (KNN) classifier}
 \usage{
-predictKnn(covariates, indexFolder, k = 1000, weighted = TRUE,
+predictKnn(covariates, cohorts, indexFolder, k = 1000, weighted = TRUE,
   checkSorting = TRUE, quiet = FALSE, threads = 1)
 }
 \arguments{
 \item{covariates}{A ffdf object containing the covariates with predefined columns (see below).}
+
+\item{cohorts}{A ffdf object containing the cohorts with predefined columns (see below).}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
@@ -38,6 +40,10 @@ These columns are expected in the covariates object:
   \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
   \verb{covariateId}    \tab(integer) \tab A numeric identifier of a covariate  \cr
   \verb{covariateValue}    \tab(real) \tab The value of the specified covariate \cr
+}
+This column is expected in the covariates object:
+\tabular{lll}{
+  \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
 }
 
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.

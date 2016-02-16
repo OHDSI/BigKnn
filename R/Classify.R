@@ -20,6 +20,7 @@
 #' \code{predictKnn} uses a KNN classifier to generate predictions.
 #'
 #' @param covariates    A ffdf object containing the covariates with predefined columns (see below).
+#' @param cohorts       A ffdf object containing the cohorts with predefined columns (see below).
 #' @param indexFolder   Path to a local folder where the KNN classifier index can be stored.
 #' @param k             The number of nearest neighbors to use to predict the outcome.
 #' @param weighted      Should the prediction be weigthed by the (inverse of the ) distance metric?
@@ -34,6 +35,10 @@
 #'   \verb{covariateId}    \tab(integer) \tab A numeric identifier of a covariate  \cr
 #'   \verb{covariateValue}    \tab(real) \tab The value of the specified covariate \cr
 #' }
+#' This column is expected in the covariates object:
+#' \tabular{lll}{
+#'   \verb{rowId}  	\tab(integer) \tab Row ID is used to link multiple covariates (x) to a single outcome (y) \cr
+#' }
 #'
 #' Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 #'
@@ -46,6 +51,7 @@
 #' 
 #' @export
 predictKnn <- function(covariates,
+                       cohorts,
                        indexFolder, 
                        k = 1000,
                        weighted = TRUE,
@@ -70,19 +76,17 @@ predictKnn <- function(covariates,
     knn$openForReading();
     knn$setK(as.integer(k))
     knn$setWeighted(weighted)
-    result <- data.frame()
+    result <- list()
     for (i in bit::chunk(from = chunk[1], to = chunk[2], by = 100000)){
       prediction <- knn$predict(rJava::.jarray(covariates$rowId[i]), 
                                 rJava::.jarray(covariates$covariateId[i]),
                                 rJava::.jarray(covariates$covariateValue[i]))
       prediction <- lapply(prediction, rJava::.jevalArray)
       prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-      result <- rbind(result, prediction)
+      result[[length(result)+1]] <- prediction
     }
-    prediction <- knn$finalizePredict()
-    prediction <- lapply(prediction, rJava::.jevalArray)
-    prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-    result <- rbind(result, prediction)
+    knn$close()
+    result <- do.call(rbind, result)
     if (needToOpen) {
       ff::close.ffdf(covariates)
     }
@@ -93,15 +97,47 @@ predictKnn <- function(covariates,
   chunks <- bit::chunk(covariates, length.out = threads)
   needToOpen <- (threads > 1)
   results <- OhdsiRTools::clusterApply(cluster = cluster, 
-                                      x = chunks, 
-                                      fun = predictionThread, 
-                                      indexFolder = indexFolder, 
-                                      k = k, 
-                                      weighted = weighted, 
-                                      covariates = covariates,
-                                      needToOpen = needToOpen)
+                                       x = chunks, 
+                                       fun = predictionThread, 
+                                       indexFolder = indexFolder, 
+                                       k = k, 
+                                       weighted = weighted, 
+                                       covariates = covariates,
+                                       needToOpen = needToOpen)
   OhdsiRTools::stopCluster(cluster)
   results <- do.call(rbind, results)
+  results <- results[!(results$rowId %in% lastRowIds), ]
+  
+  # Process rows at thread boundaries:
+  lastRowIds <- vector(length = length(chunks))
+  for (i in 1 : length(chunks)){
+    lastRowIds[i] <- covariates$rowId[chunks[[i]][2]]
+  }
+  t <- ffbase::is.na.ff(ffbase::ffmatch(covariates$rowId, ff::as.ff(lastRowIds)))
+  covarSubset <- covariates[ffbase::ffwhich(t, t == FALSE), ]
+  knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
+  knn$openForReading();
+  knn$setK(as.integer(k))
+  knn$setWeighted(weighted)
+  prediction <- knn$predict(rJava::.jarray(ff::as.ram(covarSubset$rowId)), 
+                            rJava::.jarray(ff::as.ram(covarSubset$covariateId)),
+                            rJava::.jarray(ff::as.ram(covarSubset$covariateValue)))
+  prediction <- lapply(prediction, rJava::.jevalArray)
+  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+  results <- rbind(results, prediction)
+  
+  prediction <- knn$finalizePredict()
+  prediction <- lapply(prediction, rJava::.jevalArray)
+  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+  results <- rbind(results, prediction)
+  
+  # Add any rows with no covariate values:
+  t <- ffbase::is.na.ff(ffbase::ffmatch(cohorts$rowId, ff::as.ff(results$rowId)))
+  if (ffbase::any.ff(t)) {
+    prediction <- data.frame(rowId = ff::as.ram(cohorts$rowId[ffbase::ffwhich(t, t == TRUE)]), value = 0) 
+    results <- rbind(results, prediction)
+  }
+  
   delta <- Sys.time() - start
   writeLines(paste("Prediction took", signif(delta, 3), attr(delta, "units")))
   return(results)

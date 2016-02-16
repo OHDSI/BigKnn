@@ -3,3 +3,5 @@
 ^\.travis\.yml$
 R/LocalEnvironment.R
 deploy.sh
+.classpath
+.project

@@ -94,6 +94,7 @@ public class LuceneKnn {
 				writer.close();
 			if (reader != null)
 				reader.close();
+			System.gc();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
