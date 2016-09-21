@@ -44,8 +44,8 @@ install:
 #  - Rscript -e "if (!require('rmarkdown')) install.packages('rmarkdown')"
 #  - Rscript -e "if (!require('knitr')) install.packages('knitr')"       
   - Rscript -e "if (!require('rJava')) install.packages('rJava')"
-  - Rscript -e "if (!require('PatientLevelPrediction')) install.packages('PatientLevelPrediction')"  # Using drat, should install dependencies
-  - Rscript -e "if (!require('OhdsiRTools')) install.packages('OhdsiRTools')"
+  - Rscript -e "if (!require('PatientLevelPrediction')) install.packages('PatientLevelPrediction', type = 'source')"  # Using drat, should install dependencies
+  - Rscript -e "if (!require('OhdsiRTools')) install.packages('OhdsiRTools', type = 'source')"
     
  # Build and check package
 script:
