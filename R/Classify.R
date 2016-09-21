@@ -71,9 +71,9 @@ predictKnn <- function(covariates,
     knn$setWeighted(weighted)
     result <- list()
     for (i in bit::chunk(from = chunk[1], to = chunk[2], by = 1e+05)) {
-      prediction <- knn$predict(rJava::.jarray(covariates$rowId[i]),
-                                rJava::.jarray(covariates$covariateId[i]),
-                                rJava::.jarray(covariates$covariateValue[i]))
+      prediction <- knn$predict(rJava::.jarray(as.numeric(covariates$rowId[i])),
+                                rJava::.jarray(as.numeric(covariates$covariateId[i])),
+                                rJava::.jarray(as.numeric(covariates$covariateValue[i])))
       prediction <- lapply(prediction, rJava::.jevalArray)
       prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
       result[[length(result) + 1]] <- prediction
@@ -99,22 +99,22 @@ predictKnn <- function(covariates,
                                        needToOpen = needToOpen)
   OhdsiRTools::stopCluster(cluster)
   results <- do.call(rbind, results)
-  results <- results[!(results$rowId %in% lastRowIds), ]
 
   # Process rows at thread boundaries:
   lastRowIds <- vector(length = length(chunks))
   for (i in 1:length(chunks)) {
     lastRowIds[i] <- covariates$rowId[chunks[[i]][2]]
   }
+  results <- results[!(results$rowId %in% lastRowIds), ]
   t <- ffbase::is.na.ff(ffbase::ffmatch(covariates$rowId, ff::as.ff(lastRowIds)))
   covarSubset <- covariates[ffbase::ffwhich(t, t == FALSE), ]
   knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
   knn$openForReading()
   knn$setK(as.integer(k))
   knn$setWeighted(weighted)
-  prediction <- knn$predict(rJava::.jarray(ff::as.ram(covarSubset$rowId)),
-                            rJava::.jarray(ff::as.ram(covarSubset$covariateId)),
-                            rJava::.jarray(ff::as.ram(covarSubset$covariateValue)))
+  prediction <- knn$predict(rJava::.jarray(as.numeric(ff::as.ram(covarSubset$rowId))),
+                            rJava::.jarray(as.numeric(ff::as.ram(covarSubset$covariateId))),
+                            rJava::.jarray(as.numeric(ff::as.ram(covarSubset$covariateValue))))
   prediction <- lapply(prediction, rJava::.jevalArray)
   prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
   results <- rbind(results, prediction)
