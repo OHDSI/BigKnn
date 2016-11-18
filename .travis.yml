@@ -35,17 +35,15 @@ install:
   - wget -q -O - https://github.com/yihui/crandalf/raw/master/inst/scripts/install-texlive | bash
   - wget -q -O - https://github.com/yihui/crandalf/raw/master/inst/scripts/install-pandoc | bash
   - PATH=$HOME/texlive/bin/x86_64-linux:$PATH  
-  # Install drat
-  - Rscript -e "if (!require('drat')) install.packages('drat')"   
-  - echo 'drat::addRepo("OHDSI")' >> .Rprofile    
-  # Install R packages
+  - Rscript -e 'if (!require("drat")) install.packages("drat")'
   - Rscript -e "if (!require('devtools')) install.packages('devtools')"    
-#  - Rscript -e "if (!require('covr')) devtools::install_github('jimhester/covr')"  
-#  - Rscript -e "if (!require('rmarkdown')) install.packages('rmarkdown')"
-#  - Rscript -e "if (!require('knitr')) install.packages('knitr')"       
   - Rscript -e "if (!require('rJava')) install.packages('rJava')"
-  - Rscript -e "if (!require('PatientLevelPrediction')) install.packages('PatientLevelPrediction', type = 'source')"  # Using drat, should install dependencies
-  - Rscript -e "if (!require('OhdsiRTools')) install.packages('OhdsiRTools', type = 'source')"
+  - Rscript -e "if (!require('bit')) install.packages('bit')"
+  - Rscript -e "if (!require('ff')) install.packages('ff')"
+  - Rscript -e "if (!require('ffbase')) install.packages('ffbase')"
+  - Rscript -e "if (!require('Cyclops')) install.packages('Cyclops')"
+  - Rscript -e 'devtools::install_github("OHDSI/OhdsiRTools")'
+
     
  # Build and check package
 script:

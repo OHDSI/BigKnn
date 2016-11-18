@@ -38,5 +38,6 @@
 #'
 #' @docType package
 #' @name BigKnn
+#' @importFrom utils setTxtProgressBar txtProgressBar
 NULL
 

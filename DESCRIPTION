@@ -8,10 +8,10 @@ Maintainer: Martijn Schuemie <schuemie@ohdsi.org>
 Description: A large scale k-nearest neighbor classifier using the Lucene search engine.
 Imports:
     rJava,
-    Cyclops,
     OhdsiRTools,
     ff,
     ffbase,
-    bit
+    bit,
+    Cyclops
 License: Apache License
 RoxygenNote: 5.0.1
