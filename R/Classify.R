@@ -85,11 +85,11 @@ predictKnn <- function(covariates,
     }
     return(result)
   }
-  cluster <- OhdsiRTools::makeCluster(threads)
-  OhdsiRTools::clusterRequire(cluster, "BigKnn")
+  cluster <- ParallelLogger::makeCluster(threads)
+  ParallelLogger::clusterRequire(cluster, "BigKnn")
   chunks <- bit::chunk(covariates, length.out = threads)
   needToOpen <- (threads > 1)
-  results <- OhdsiRTools::clusterApply(cluster = cluster,
+  results <- ParallelLogger::clusterApply(cluster = cluster,
                                        x = chunks,
                                        fun = predictionThread,
                                        indexFolder = indexFolder,
@@ -97,7 +97,7 @@ predictKnn <- function(covariates,
                                        weighted = weighted,
                                        covariates = covariates,
                                        needToOpen = needToOpen)
-  OhdsiRTools::stopCluster(cluster)
+  ParallelLogger::stopCluster(cluster)
   results <- do.call(rbind, results)
   
   lastRowIds <- vector(length = length(chunks)) # added during debug
