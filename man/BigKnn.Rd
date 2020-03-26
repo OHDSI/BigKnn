@@ -3,9 +3,7 @@
 \docType{package}
 \name{BigKnn}
 \alias{BigKnn}
-\alias{BigKnn-package}
 \title{BigKnn}
 \description{
 BigKnn
 }
-

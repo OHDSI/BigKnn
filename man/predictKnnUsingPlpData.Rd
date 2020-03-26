@@ -4,8 +4,13 @@
 \alias{predictKnnUsingPlpData}
 \title{Create predictive probabilities using KNN.}
 \usage{
-predictKnnUsingPlpData(indexFolder, k = 1000, weighted = TRUE,
-  threads = 10, plpData)
+predictKnnUsingPlpData(
+  indexFolder,
+  k = 1000,
+  weighted = TRUE,
+  threads = 10,
+  plpData
+)
 }
 \arguments{
 \item{indexFolder}{Path to a local folder where the KNN classifier index is be stored.}
@@ -28,4 +33,3 @@ Create predictive probabilities using KNN.
 \details{
 Generates predictions for the population specified in plpData.
 }
-

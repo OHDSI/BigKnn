@@ -4,8 +4,16 @@
 \alias{predictKnn}
 \title{Predict using a K-nearest neighbor (KNN) classifier}
 \usage{
-predictKnn(covariates, cohorts, indexFolder, k = 1000, weighted = TRUE,
-  checkSorting = TRUE, quiet = FALSE, threads = 1)
+predictKnn(
+  covariates,
+  cohorts,
+  indexFolder,
+  k = 1000,
+  weighted = TRUE,
+  checkSorting = TRUE,
+  quiet = FALSE,
+  threads = 1
+)
 }
 \arguments{
 \item{covariates}{A ffdf object containing the covariates with predefined columns (see below).}
@@ -41,4 +49,3 @@ The value of the specified covariate \cr } This column is expected in the covari
 single outcome (y) \cr }
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 }
-
