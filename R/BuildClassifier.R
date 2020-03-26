@@ -74,14 +74,14 @@ buildKnn <- function(outcomes,
   nonZeroOutcomeRowIds <- outcomes$rowId[ffbase::ffwhich(t, t == TRUE)]
 
   for (i in bit::chunk(nonZeroOutcomeRowIds, by = 1e+05)) {
-    knn$addNonZeroOutcomes(rJava::.jarray(nonZeroOutcomeRowIds[i]))
+    knn$addNonZeroOutcomes(rJava::.jarray(as.double(nonZeroOutcomeRowIds[i])))
   }
   chunks <- bit::chunk(covariates, by = 1e+05)
   pb <- txtProgressBar(style = 3)
   for (i in 1:length(chunks)) {
-    knn$addCovariates(rJava::.jarray(covariates$rowId[chunks[[i]]]),
-                      rJava::.jarray(covariates$covariateId[chunks[[i]]]),
-                      rJava::.jarray(covariates$covariateValue[chunks[[i]]]))
+    knn$addCovariates(rJava::.jarray(as.double(covariates$rowId[chunks[[i]]])),
+                      rJava::.jarray(as.double(covariates$covariateId[chunks[[i]]])),
+                      rJava::.jarray(as.double(covariates$covariateValue[chunks[[i]]])))
     setTxtProgressBar(pb, i/length(chunks))
   }
   knn$finalizeWriting()
