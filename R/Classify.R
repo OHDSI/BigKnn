@@ -71,9 +71,9 @@ predictKnn <- function(covariates,
     knn$setWeighted(weighted)
     result <- list()
     for (i in bit::chunk(from = chunk[1], to = chunk[2], by = 1e+05)) {
-      prediction <- knn$predict(rJava::.jarray(as.numeric(covariates$rowId[i])),
-                                rJava::.jarray(as.numeric(covariates$covariateId[i])),
-                                rJava::.jarray(as.numeric(covariates$covariateValue[i])))
+      prediction <- knn$predict(rJava::.jarray(as.double(covariates$rowId[i])),
+                                rJava::.jarray(as.double(covariates$covariateId[i])),
+                                rJava::.jarray(as.double(covariates$covariateValue[i])))
       prediction <- lapply(prediction, rJava::.jevalArray)
       prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
       result[[length(result) + 1]] <- prediction
@@ -85,11 +85,11 @@ predictKnn <- function(covariates,
     }
     return(result)
   }
-  cluster <- OhdsiRTools::makeCluster(threads)
-  OhdsiRTools::clusterRequire(cluster, "BigKnn")
+  cluster <- ParallelLogger::makeCluster(threads)
+  ParallelLogger::clusterRequire(cluster, "BigKnn")
   chunks <- bit::chunk(covariates, length.out = threads)
   needToOpen <- (threads > 1)
-  results <- OhdsiRTools::clusterApply(cluster = cluster,
+  results <- ParallelLogger::clusterApply(cluster = cluster,
                                        x = chunks,
                                        fun = predictionThread,
                                        indexFolder = indexFolder,
@@ -97,8 +97,11 @@ predictKnn <- function(covariates,
                                        weighted = weighted,
                                        covariates = covariates,
                                        needToOpen = needToOpen)
-  OhdsiRTools::stopCluster(cluster)
+  ParallelLogger::stopCluster(cluster)
   results <- do.call(rbind, results)
+  
+  lastRowIds <- vector(length = length(chunks)) # added during debug
+  results <- results[!(results$rowId %in% lastRowIds), ] # what is lastRowIds
 
   # Process rows at thread boundaries:
   lastRowIds <- vector(length = length(chunks))
@@ -112,9 +115,9 @@ predictKnn <- function(covariates,
   knn$openForReading()
   knn$setK(as.integer(k))
   knn$setWeighted(weighted)
-  prediction <- knn$predict(rJava::.jarray(as.numeric(ff::as.ram(covarSubset$rowId))),
-                            rJava::.jarray(as.numeric(ff::as.ram(covarSubset$covariateId))),
-                            rJava::.jarray(as.numeric(ff::as.ram(covarSubset$covariateValue))))
+  prediction <- knn$predict(rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$rowId))),
+                            rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateId))),
+                            rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateValue))))
   prediction <- lapply(prediction, rJava::.jevalArray)
   prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
   results <- rbind(results, prediction)
@@ -125,7 +128,7 @@ predictKnn <- function(covariates,
   results <- rbind(results, prediction)
 
   # Add any rows with no covariate values:
-  t <- ffbase::is.na.ff(ffbase::ffmatch(cohorts$rowId, ff::as.ff(results$rowId)))
+  t <- ffbase::is.na.ff(ffbase::ffmatch(cohorts$rowId, ff::as.ff(results$rowId))) 
   if (ffbase::any.ff(t)) {
     prediction <- data.frame(rowId = ff::as.ram(cohorts$rowId[ffbase::ffwhich(t, t == TRUE)]),
                              value = 0)

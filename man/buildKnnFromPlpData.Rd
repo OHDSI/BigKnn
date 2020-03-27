@@ -4,8 +4,14 @@
 \alias{buildKnnFromPlpData}
 \title{Build a K-nearest neighbor (KNN) classifier from a plpData object}
 \usage{
-buildKnnFromPlpData(plpData, indexFolder, overwrite = TRUE,
-  removeDropouts = TRUE, cohortId = NULL, outcomeId = NULL)
+buildKnnFromPlpData(
+  plpData,
+  indexFolder,
+  overwrite = TRUE,
+  removeDropouts = TRUE,
+  cohortId = NULL,
+  outcomeId = NULL
+)
 }
 \arguments{
 \item{plpData}{An object of type \code{plpData}.}
@@ -25,4 +31,3 @@ the model.}
 \description{
 Build a K-nearest neighbor (KNN) classifier from a plpData object
 }
-

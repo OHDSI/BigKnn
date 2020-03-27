@@ -4,8 +4,15 @@
 \alias{buildKnn}
 \title{Build a K-nearest neighbor (KNN) classifier}
 \usage{
-buildKnn(outcomes, covariates, indexFolder, overwrite = TRUE,
-  checkSorting = TRUE, checkRowIds = TRUE, quiet = FALSE)
+buildKnn(
+  outcomes,
+  covariates,
+  indexFolder,
+  overwrite = TRUE,
+  checkSorting = TRUE,
+  checkRowIds = TRUE,
+  quiet = FALSE
+)
 }
 \arguments{
 \item{outcomes}{A ffdf object containing the outcomes with predefined columns (see below).}
@@ -38,4 +45,3 @@ Row ID is used to link multiple covariates (x) to a single outcome (y) \cr \verb
 The value of the specified covariate \cr }
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 }
-
