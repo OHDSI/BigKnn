@@ -12,6 +12,7 @@ Imports:
     ParallelLogger,
     ff,
     ffbase,
-    bit
+    bit,
+    Cyclops
 License: Apache License
 RoxygenNote: 7.0.2

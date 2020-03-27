@@ -16,11 +16,28 @@
 
 .onLoad <- function(libname, pkgname) {
   rJava::.jpackage(pkgname, lib.loc = libname)
+  
+  # Copied this from the ff package:
+  if (is.null(getOption("ffmaxbytes"))) {
+    # memory.limit is windows specific
+    if (.Platform$OS.type == "windows") {
+      if (getRversion() >= "2.6.0")
+        options(ffmaxbytes = 0.5 * utils::memory.limit() * (1024^2)) else options(ffmaxbytes = 0.5 * utils::memory.limit())
+    } else {
+      # some magic constant
+      options(ffmaxbytes = 0.5 * 1024^3)
+    }
+  }
+  
+  # Workaround for problem with ff on machines with lots of memory (see
+  # https://github.com/edwindj/ffbase/issues/37)
+  options(ffmaxbytes = min(getOption("ffmaxbytes"), .Machine$integer.max * 12))
 }
 
 #' BigKnn
 #'
 #' @docType package
 #' @name BigKnn
+#' @importFrom utils setTxtProgressBar txtProgressBar
 NULL
 

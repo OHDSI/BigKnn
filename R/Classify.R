@@ -108,6 +108,7 @@ predictKnn <- function(covariates,
   for (i in 1:length(chunks)) {
     lastRowIds[i] <- covariates$rowId[chunks[[i]][2]]
   }
+  results <- results[!(results$rowId %in% lastRowIds), ]
   t <- ffbase::is.na.ff(ffbase::ffmatch(covariates$rowId, ff::as.ff(lastRowIds)))
   covarSubset <- covariates[ffbase::ffwhich(t, t == FALSE), ]
   knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
