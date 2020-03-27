@@ -1,4 +1,4 @@
-# Copyright 2016 Observational Health Data Sciences and Informatics
+# Copyright 2020 Observational Health Data Sciences and Informatics
 #
 # This file is part of BigKnn
 # 
@@ -25,7 +25,7 @@
 #' @param overwrite      Automatically overwrite if an index already exists?
 #' @param checkSorting   Check if the data are sorted appropriately, and if not, sort.
 #' @param checkRowIds    Check if all rowIds in the covariates appear in the outcomes.
-#' @param quiet          If true, (warning) messages are surpressed.
+#' @param quiet          If true, (warning) messages are suppressed.
 #'
 #' @details
 #' These columns are expected in the outcome object: \tabular{lll}{ \verb{rowId} \tab(integer) \tab

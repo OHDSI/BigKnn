@@ -16,14 +16,13 @@ addToDrat(){
   git fetch upstream 2>err.txt
   git checkout gh-pages
 
-  ## Use cached packages
+  ## Install drat
   mkdir -p ~/Rlib
   echo 'R_LIBS=~/Rlib' > .Renviron
-    
-  ## Deploy
+
   Rscript -e "drat::insertPackage('$PKG_REPO/$PKG_TARBALL', \
     repodir = '.', \
-    commit='Travis update: $PKG_TARBALL build $TRAVIS_BUILD_NUMBER')"
+    commit='Travis update: $PKG_TARBALL build $TRAVIS_BUILD_NUMBER commit $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT')"
   git push
 
 }

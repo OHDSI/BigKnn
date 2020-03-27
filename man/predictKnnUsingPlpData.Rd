@@ -25,7 +25,7 @@ predictKnnUsingPlpData(
 }
 \value{
 The value column in the result data.frame is: logistic: probabilities of the outcome, poisson:
-Poisson rate (per day) of the outome, survival: hazard rate (per day) of the outcome.
+Poisson rate (per day) of the outcome, survival: hazard rate (per day) of the outcome.
 }
 \description{
 Create predictive probabilities using KNN.

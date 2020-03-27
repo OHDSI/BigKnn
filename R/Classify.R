@@ -1,4 +1,4 @@
-# Copyright 2016 Observational Health Data Sciences and Informatics
+# Copyright 2020 Observational Health Data Sciences and Informatics
 #
 # This file is part of BigKnn
 # 
@@ -23,7 +23,7 @@
 #' @param cohorts        A ffdf object containing the cohorts with predefined columns (see below).
 #' @param indexFolder    Path to a local folder where the KNN classifier index can be stored.
 #' @param k              The number of nearest neighbors to use to predict the outcome.
-#' @param weighted       Should the prediction be weigthed by the (inverse of the ) distance metric?
+#' @param weighted       Should the prediction be weighted by the (inverse of the ) distance metric?
 #' @param checkSorting   Check if the data are sorted appropriately, and if not, sort.
 #' @param quiet          If true, (warning) messages are surpressed.
 #' @param threads        Number of parallel threads to used for the computation.

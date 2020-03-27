@@ -1,4 +1,4 @@
-options(fftempdir = "s:/temp")
+options(fftempdir = "s:/fftemp")
 
 covariates <- data.frame(rowIds = c(1, 1, 1, 2, 2, 3),
                          covariateIds = c(10, 11, 12, 10, 11, 12),
@@ -8,7 +8,7 @@ cohorts <- data.frame(rowIds = c(1, 2, 3))
 outcomes <- data.frame(rowIds = c(1, 2, 3), y = c(1, 0, 0))
 
 indexFolder <- "s:/temp/lucene3"
-
+unlink(indexFolder)
 covariates <- ff::as.ffdf(covariates)
 outcomes <- ff::as.ffdf(outcomes)
 

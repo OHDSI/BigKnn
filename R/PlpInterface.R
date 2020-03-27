@@ -129,7 +129,7 @@ buildKnnFromPlpData <- function(plpData,
 #'
 #' @return
 #' The value column in the result data.frame is: logistic: probabilities of the outcome, poisson:
-#' Poisson rate (per day) of the outome, survival: hazard rate (per day) of the outcome.
+#' Poisson rate (per day) of the outcome, survival: hazard rate (per day) of the outcome.
 #'
 #' @param indexFolder   Path to a local folder where the KNN classifier index is be stored.
 #' @param k             The number of nearest neighbors to use to predict the outcome.

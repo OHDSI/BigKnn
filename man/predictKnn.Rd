@@ -24,7 +24,7 @@ predictKnn(
 
 \item{k}{The number of nearest neighbors to use to predict the outcome.}
 
-\item{weighted}{Should the prediction be weigthed by the (inverse of the ) distance metric?}
+\item{weighted}{Should the prediction be weighted by the (inverse of the ) distance metric?}
 
 \item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
 

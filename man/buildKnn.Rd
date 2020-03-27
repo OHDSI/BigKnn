@@ -27,7 +27,7 @@ buildKnn(
 
 \item{checkRowIds}{Check if all rowIds in the covariates appear in the outcomes.}
 
-\item{quiet}{If true, (warning) messages are surpressed.}
+\item{quiet}{If true, (warning) messages are suppressed.}
 }
 \value{
 Nothing

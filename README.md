@@ -1,6 +1,10 @@
 BigKnn
 ======
 
+[![Build Status](https://travis-ci.org/OHDSI/BigKnn.svg?branch=master)](https://travis-ci.org/OHDSI/BigKnn)
+[![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
+
+
 Introduction
 ============
 An R package implementing a large scale k-nearest neighbor (KNN) classifier using the [Lucene](https://lucene.apache.org/) search engine.
@@ -43,13 +47,10 @@ Requires R. Also requires Java 1.7 or higher (Oracle Java is recommended) .
 
 Dependencies
 ============
-Please note that this package requires Java to be installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.
+Please note that this package requires Java to be installed. If you don't have Java already installed on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.
 
-BigKnn also depends on the OHDSI Cyclops and OhdsiRTools packages.
-
-
-Getting Started
-===============
+Installation
+=============
 Use the following commands in R to install the BigKnn package:
 
 ```r
@@ -58,11 +59,14 @@ drat::addRepo("OHDSI")
 install.packages("BigKnn")
 ```
 
-Getting Involved
-=============
+User Documentation
+==================
 * Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/BigKnn/master/extras/BigKnn.pdf) 
+
+Support
+=======
 * Developer questions/comments/feedback: <a href="http://forums.ohdsi.org/c/developers">OHDSI Forum</a>
-* We use the <a href="../../issues">GitHub issue tracker</a> for all bugs/issues/enhancements
+* We use the <a href="https://github.com/OHDSI/BigKnn/issues">GitHub issue tracker</a> for all bugs/issues/enhancements
 
 License
 =======
@@ -73,7 +77,5 @@ Development
 BigKnn is being developed in R Studio and Eclipse
 
 ### Development status
-[![Build Status](https://travis-ci.org/OHDSI/BigKnn.svg?branch=master)](https://travis-ci.org/OHDSI/BigKnn)
-[![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
 
 Under development. Use at your own risk.
