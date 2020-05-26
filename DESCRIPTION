@@ -1,7 +1,7 @@
 Package: BigKnn
 Type: Package
 Title: Large Scale K-Nearest Neighbor Classifier using the Lucene Search Engine
-Version: 0.0.3
+Version: 0.0.4
 Date: 2020-03-27
 Authors@R: c(
 	person("Martijn", "Schuemie", , "schuemie@ohdsi.org", role = c("aut", "cre"))
@@ -12,12 +12,9 @@ Imports:
 	rJava,
 	Cyclops,
 	ParallelLogger,
-	ff,
-	ffbase,
-	bit
+	Andromeda
 License: Apache License
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 URL: https://ohdsi.github.io/BigKnn, https://github.com/OHDSI/BigKnn
 BugReports: https://github.com/OHDSI/BigKnn/issues
 Encoding: UTF-8
-

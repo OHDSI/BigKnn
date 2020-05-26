@@ -17,105 +17,26 @@
 #' Build a K-nearest neighbor (KNN) classifier from a plpData object
 #'
 #' @param plpData          An object of type \code{plpData}.
+#' @param population       The population 
 #' @param indexFolder      Path to a local folder where the KNN classifier index can be stored.
 #' @param overwrite        Automatically overwrite if an index already exists?
-#' @param removeDropouts   If TRUE subjects that do not have the full observation window (i.e. are
-#'                         censored earlier) and do not have the outcome are removed prior to fitting
-#'                         the model.
 #' @param cohortId         The ID of the specific cohort for which to fit a model.
 #' @param outcomeId        The ID of the specific outcome for which to fit a model.
 #'
 #' @export
 buildKnnFromPlpData <- function(plpData,
+                                population,
                                 indexFolder,
                                 overwrite = TRUE,
-                                removeDropouts = TRUE,
                                 cohortId = NULL,
                                 outcomeId = NULL) {
-  if (is.null(cohortId) && length(plpData$metaData$cohortIds) != 1) {
-    stop("No cohort ID specified, but multiple cohorts found")
-  }
-  if (is.null(outcomeId) && length(plpData$metaData$outcomeIds) != 1) {
-    stop("No outcome ID specified, but multiple outcomes found")
-  }
-  if (!is.null(cohortId) && !(cohortId %in% plpData$metaData$cohortIds)) {
-    stop("Cohort ID not found")
-  }
-  if (!is.null(outcomeId) && !(outcomeId %in% plpData$metaData$outcomeIds)) {
-    stop("Outcome ID not found")
-  }
-  covariates <- plpData$covariates
-  cohorts <- plpData$cohorts
-  outcomes <- plpData$outcomes
 
-  if (!is.null(cohortId) && length(plpData$metaData$cohortIds) > 1) {
-    # Filter by cohort ID:
-    t <- cohorts$cohortId == cohortId
-    if (!ffbase::any.ff(t)) {
-      stop(paste("No cohorts with cohort ID", cohortId))
-    }
-    cohorts <- cohorts[ffbase::ffwhich(t, t == TRUE), ]
-
-    idx <- ffbase::ffmatch(x = covariates$rowId, table = cohorts$rowId)
-    idx <- ffbase::ffwhich(idx, !is.na(idx))
-    covariates <- covariates[idx, ]
-
-    # No need to filter outcomes since we'll merge outcomes with cohorts later
-  }
-
-  if (!is.null(outcomeId) && length(plpData$metaData$outcomeIds) > 1) {
-    # Filter by outcome ID:
-    t <- outcomes$outcomeId == outcomeId
-    if (!ffbase::any.ff(t)) {
-      stop(paste("No outcomes with outcome ID", outcomeId))
-    }
-    outcomes <- outcomes[ffbase::ffwhich(t, t == TRUE), ]
-  }
-
-  if (!is.null(plpData$exclude) && nrow(plpData$exclude) != 0) {
-    # Filter subjects with previous outcomes:
-    if (!is.null(outcomeId)) {
-      exclude <- plpData$exclude
-      t <- exclude$outcomeId == outcomeId
-      if (ffbase::any.ff(t)) {
-        exclude <- exclude[ffbase::ffwhich(t, t == TRUE), ]
-
-        t <- ffbase::ffmatch(x = cohorts$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-        if (ffbase::any.ff(t)) {
-          cohorts <- cohorts[ffbase::ffwhich(t, t == FALSE), ]
-        }
-
-        t <- ffbase::ffmatch(x = covariates$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-        if (ffbase::any.ff(t)) {
-          covariates <- covariates[ffbase::ffwhich(t, t == FALSE), ]
-        }
-
-        # No need to filter outcomes since we'll merge outcomes with cohorts later
-      }
-    }
-  }
   # Merge outcomes with cohorts so we also have the subjects with 0 outcomes:
-  outcomes$y <- ff::ff(1, length = nrow(outcomes), vmode = "double")
-  outcomes <- merge(cohorts, outcomes, by = c("rowId"), all.x = TRUE)
-  idx <- ffbase::is.na.ff(outcomes$y)
-  idx <- ffbase::ffwhich(idx, idx == TRUE)
-  outcomes$y <- ff::ffindexset(x = outcomes$y,
-                               index = idx,
-                               value = ff::ff(0, length = length(idx), vmode = "double"))
-
-  if (removeDropouts) {
-    # Select only subjects with observation spanning the full window, or with an outcome:
-    fullWindowLength <- ffbase::max.ff(plpData$cohorts$time)
-    t <- outcomes$y != 0 | outcomes$time == fullWindowLength
-    outcomes <- outcomes[ffbase::ffwhich(t, t == TRUE), ]
-
-    idx <- ffbase::ffmatch(x = covariates$rowId, table = outcomes$rowId)
-    idx <- ffbase::ffwhich(idx, !is.na(idx))
-    covariates <- covariates[idx, ]
-  }
-
-  buildKnn(outcomes = outcomes,
-           covariates = covariates,
+  population$y <- 1
+  population$y[population$outcomeCount==0] <- 0
+  
+  buildKnn(population = population,
+           covariateData = covariateData,
            indexFolder = indexFolder,
            overwrite = overwrite)
 
@@ -139,29 +60,10 @@ buildKnnFromPlpData <- function(plpData,
 #' @export
 predictKnnUsingPlpData <- function(indexFolder, k = 1000, weighted = TRUE, threads = 10, plpData) {
 
-  covariates <- plpData$covariates
+  covariateData <- plpData$covariateData
   cohorts <- plpData$cohorts
 
-  if (length(plpData$metaData$cohortIds) > 1) {
-    stop("Currently not supporting multiple cohort IDs")
-  }
-
-  if (!is.null(plpData$exclude) && nrow(plpData$exclude) != 0) {
-    if (length(plpData$metaData$outcomeIds) > 1) {
-      stop("Currently not supporting multiple outcome IDs")
-    }
-    # Filter subjects with previous outcomes:
-    exclude <- plpData$exclude
-    t <- ffbase::ffmatch(x = cohorts$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-    if (ffbase::any.ff(t)) {
-      cohorts <- cohorts[ffbase::ffwhich(t, t == FALSE), ]
-    }
-    t <- ffbase::ffmatch(x = covariates$rowId, table = exclude$rowId, nomatch = 0L) > 0L
-    if (ffbase::any.ff(t)) {
-      covariates <- covariates[ffbase::ffwhich(t, t == FALSE), ]
-    }
-  }
-  prediction <- predictKnn(covariates = covariates,
+  prediction <- predictKnn(covariateData = covariateData,
                            cohorts = cohorts,
                            indexFolder = indexFolder,
                            k = k,

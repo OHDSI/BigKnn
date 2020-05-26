@@ -5,27 +5,24 @@
 \title{Build a K-nearest neighbor (KNN) classifier}
 \usage{
 buildKnn(
-  outcomes,
-  covariates,
+  population,
+  covariateData,
   indexFolder,
   overwrite = TRUE,
   checkSorting = TRUE,
-  checkRowIds = TRUE,
   quiet = FALSE
 )
 }
 \arguments{
-\item{outcomes}{A ffdf object containing the outcomes with predefined columns (see below).}
+\item{population}{-too add-}
 
-\item{covariates}{A ffdf object containing the covariates with predefined columns (see below).}
+\item{covariateData}{-too add-}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
 \item{overwrite}{Automatically overwrite if an index already exists?}
 
 \item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
-
-\item{checkRowIds}{Check if all rowIds in the covariates appear in the outcomes.}
 
 \item{quiet}{If true, (warning) messages are suppressed.}
 }

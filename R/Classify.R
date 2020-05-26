@@ -19,8 +19,8 @@
 #' @description
 #' \code{predictKnn} uses a KNN classifier to generate predictions.
 #'
-#' @param covariates     A ffdf object containing the covariates with predefined columns (see below).
-#' @param cohorts        A ffdf object containing the cohorts with predefined columns (see below).
+#' @param covariateData -too add-
+#' @param cohorts        -too add-
 #' @param indexFolder    Path to a local folder where the KNN classifier index can be stored.
 #' @param k              The number of nearest neighbors to use to predict the outcome.
 #' @param weighted       Should the prediction be weighted by the (inverse of the ) distance metric?
@@ -43,7 +43,7 @@
 #' between 0 and 1 representing the probability of the outcome \cr }
 #'
 #' @export
-predictKnn <- function(covariates,
+predictKnn <- function(covariateData,
                        cohorts,
                        indexFolder,
                        k = 1000,
@@ -52,89 +52,109 @@ predictKnn <- function(covariates,
                        quiet = FALSE,
                        threads = 1) {
   start <- Sys.time()
+  
+  tempData <- andromeda(covariates = covariateData$covariates,
+                        cohorts = cohorts)
+  
   if (checkSorting) {
-    if (!Cyclops::isSorted(covariates, c("rowId"))) {
-      if (!quiet) {
-        writeLines("Sorting covariates by rowId")
-      }
-      rownames(covariates) <- NULL  #Needs to be null or the ordering of ffdf will fail
-      covariates <- covariates[ff::ffdforder(covariates[c("rowId")]), ]
+    if (!quiet) {
+      writeLines("Sorting covariates by rowId")
     }
+    #rownames(covariates) <- NULL  #Needs to be null or the ordering of ffdf will fail
+    tempData$covariatesSorted <- tempData$covariates %>% dplyr::arrange(desc(rowId))
+    tempData$covariates <- NULL
+    tempData$covariates <- tempData$covariatesSorted
+    tempData$covariatesSorted <- NULL
+    #covariates <- covariates[ff::ffdforder(covariates[c("rowId")]), ]
+    
   }
-  predictionThread <- function(chunk, indexFolder, k, weighted, covariates, needToOpen) {
-    if (needToOpen) {
-      ff::open.ffdf(covariates, readonly = TRUE)
-    }
+  
+  predictionThread <- function(rowIds, indexFolder, k, weighted){
+    result <- Andromeda::groupApply(tempData$covariates %>% dplyr::filter(rowId %in% rowIds),
+                                    predictionKnn,
+                                    groupVariable = "rowId",
+                                    indexFolder = indexFolder, 
+                                    k = k, 
+                                    weighted = weighted)
+    result <- do.call(rbind, result)
+    return(result)
+  }
+  
+  predictionKnn <- function(batch, indexFolder, k, weighted) {
     knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
     knn$openForReading()
     knn$setK(as.integer(k))
     knn$setWeighted(weighted)
-    result <- list()
-    for (i in bit::chunk(from = chunk[1], to = chunk[2], by = 1e+05)) {
-      prediction <- knn$predict(rJava::.jarray(as.double(covariates$rowId[i])),
-                                rJava::.jarray(as.double(covariates$covariateId[i])),
-                                rJava::.jarray(as.double(covariates$covariateValue[i])))
-      prediction <- lapply(prediction, rJava::.jevalArray)
-      prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-      result[[length(result) + 1]] <- prediction
-    }
+    temp <- as.data.frame(batch)
+    writeLines(paste0(temp[1,], collapse = '-'))
+    prediction <- knn$predict(rJava::.jarray(as.double(as.character(temp$rowId))),
+                                rJava::.jarray(as.double(as.character(temp$covariateId))),
+                                rJava::.jarray(as.double(as.character(temp$covariateValue))))
+    prediction <- lapply(prediction, rJava::.jevalArray)
+    prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+
+    writeLines(paste0(prediction[1,], collapse = '-'  ))
+    
+    
     knn$close()
-    result <- do.call(rbind, result)
-    if (needToOpen) {
-      ff::close.ffdf(covariates)
-    }
-    return(result)
+    return(prediction)
   }
+  
+  rowIds <- tempData$covariates %>% dplyr::distinct(rowId)
+  rowIds <- as.data.frame(rowIds)$rowId
+
   cluster <- ParallelLogger::makeCluster(threads)
   ParallelLogger::clusterRequire(cluster, "BigKnn")
-  chunks <- bit::chunk(covariates, length.out = threads)
-  needToOpen <- (threads > 1)
+  #chunks <- bit::chunk(covariates, length.out = threads)
+  chunks <- split(rowIds, ceiling(seq_along(rowIds)/100))
   results <- ParallelLogger::clusterApply(cluster = cluster,
-                                       x = chunks,
-                                       fun = predictionThread,
-                                       indexFolder = indexFolder,
-                                       k = k,
-                                       weighted = weighted,
-                                       covariates = covariates,
-                                       needToOpen = needToOpen)
+                                          x = chunks,
+                                          fun = predictionThread,
+                                          indexFolder = indexFolder,
+                                          k = k,
+                                          weighted = weighted)
   ParallelLogger::stopCluster(cluster)
   results <- do.call(rbind, results)
   
-  lastRowIds <- vector(length = length(chunks)) # added during debug
-  results <- results[!(results$rowId %in% lastRowIds), ] # what is lastRowIds
-
+  #lastRowIds <- vector(length = length(chunks)) # added during debug
+  #results <- results[!(results$rowId %in% lastRowIds), ] # what is lastRowIds
+  
   # Process rows at thread boundaries:
-  lastRowIds <- vector(length = length(chunks))
-  for (i in 1:length(chunks)) {
-    lastRowIds[i] <- covariates$rowId[chunks[[i]][2]]
-  }
-  results <- results[!(results$rowId %in% lastRowIds), ]
-  t <- ffbase::is.na.ff(ffbase::ffmatch(covariates$rowId, ff::as.ff(lastRowIds)))
-  covarSubset <- covariates[ffbase::ffwhich(t, t == FALSE), ]
-  knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
-  knn$openForReading()
-  knn$setK(as.integer(k))
-  knn$setWeighted(weighted)
-  prediction <- knn$predict(rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$rowId))),
-                            rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateId))),
-                            rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateValue))))
-  prediction <- lapply(prediction, rJava::.jevalArray)
-  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-  results <- rbind(results, prediction)
-
-  prediction <- knn$finalizePredict()
-  prediction <- lapply(prediction, rJava::.jevalArray)
-  prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
-  results <- rbind(results, prediction)
-
+  #lastRowIds <- vector(length = length(chunks))
+  #for (i in 1:length(chunks)) {
+  # lastRowIds[i] <- covariates$rowId[chunks[[i]][2]]
+  #}
+  #results <- results[!(results$rowId %in% lastRowIds), ]
+  #t <- ffbase::is.na.ff(ffbase::ffmatch(covariates$rowId, ff::as.ff(lastRowIds)))
+  #covarSubset <- covariates[ffbase::ffwhich(t, t == FALSE), ]
+  #knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
+  #knn$openForReading()
+  #knn$setK(as.integer(k))
+  #knn$setWeighted(weighted)
+  #prediction <- knn$predict(rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$rowId))),
+  #                          rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateId))),
+  #                          rJava::.jarray(as.double(ff::as.data.frame.ffdf(covarSubset$covariateValue))))
+  #prediction <- lapply(prediction, rJava::.jevalArray)
+  #prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+  #results <- rbind(results, prediction)
+  
+  #prediction <- knn$finalizePredict()
+  #prediction <- lapply(prediction, rJava::.jevalArray)
+  #prediction <- data.frame(rowId = prediction[[1]], value = prediction[[2]])
+  #results <- rbind(results, prediction)
+  
   # Add any rows with no covariate values:
-  t <- ffbase::is.na.ff(ffbase::ffmatch(cohorts$rowId, ff::as.ff(results$rowId))) 
-  if (ffbase::any.ff(t)) {
-    prediction <- data.frame(rowId = ff::as.ram(cohorts$rowId[ffbase::ffwhich(t, t == TRUE)]),
+  ##t <- ffbase::is.na.ff(ffbase::ffmatch(cohorts$rowId, ff::as.ff(results$rowId))) 
+  t <- tempData$cohorts %>% filter(!rowId %in% !!results$rowId)
+  
+  #if (ffbase::any.ff(t)) {
+  if(nrow(t)>0){
+    #prediction <- data.frame(rowId = ff::as.ram(cohorts$rowId[ffbase::ffwhich(t, t == TRUE)]),
+    prediction <- data.frame(rowId = as.data.frame(t)$rowId,
                              value = 0)
     results <- rbind(results, prediction)
   }
-
+  
   delta <- Sys.time() - start
   writeLines(paste("Prediction took", signif(delta, 3), attr(delta, "units")))
   return(results)
