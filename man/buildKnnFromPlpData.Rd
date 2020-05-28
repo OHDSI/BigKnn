@@ -6,9 +6,9 @@
 \usage{
 buildKnnFromPlpData(
   plpData,
+  population,
   indexFolder,
   overwrite = TRUE,
-  removeDropouts = TRUE,
   cohortId = NULL,
   outcomeId = NULL
 )
@@ -16,13 +16,11 @@ buildKnnFromPlpData(
 \arguments{
 \item{plpData}{An object of type \code{plpData}.}
 
+\item{population}{The population}
+
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
 \item{overwrite}{Automatically overwrite if an index already exists?}
-
-\item{removeDropouts}{If TRUE subjects that do not have the full observation window (i.e. are
-censored earlier) and do not have the outcome are removed prior to fitting
-the model.}
 
 \item{cohortId}{The ID of the specific cohort for which to fit a model.}
 

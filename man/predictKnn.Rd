@@ -5,7 +5,7 @@
 \title{Predict using a K-nearest neighbor (KNN) classifier}
 \usage{
 predictKnn(
-  covariates,
+  covariateData,
   cohorts,
   indexFolder,
   k = 1000,
@@ -16,9 +16,9 @@ predictKnn(
 )
 }
 \arguments{
-\item{covariates}{A ffdf object containing the covariates with predefined columns (see below).}
+\item{covariateData}{-too add-}
 
-\item{cohorts}{A ffdf object containing the cohorts with predefined columns (see below).}
+\item{cohorts}{-too add-}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
