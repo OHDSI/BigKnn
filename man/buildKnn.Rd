@@ -4,25 +4,16 @@
 \alias{buildKnn}
 \title{Build a K-nearest neighbor (KNN) classifier}
 \usage{
-buildKnn(
-  population,
-  covariateData,
-  indexFolder,
-  overwrite = TRUE,
-  checkSorting = TRUE,
-  quiet = FALSE
-)
+buildKnn(outcomes, covariates, indexFolder, overwrite = TRUE, quiet = FALSE)
 }
 \arguments{
-\item{population}{-too add-}
+\item{outcomes}{An Andromeda table containing the outcomes with predefined columns (see below).}
 
-\item{covariateData}{-too add-}
+\item{covariates}{An Andromeda table containing the covariates with predefined columns (see below).}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
 \item{overwrite}{Automatically overwrite if an index already exists?}
-
-\item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
 
 \item{quiet}{If true, (warning) messages are suppressed.}
 }
@@ -30,7 +21,7 @@ buildKnn(
 Nothing
 }
 \description{
-\code{buildKnn} loads data from two ffdf objects, and inserts them into a KNN classifier.
+\code{buildKnn} loads data from two Andromeda tables, and inserts them into a KNN classifier.
 }
 \details{
 These columns are expected in the outcome object: \tabular{lll}{ \verb{rowId} \tab(integer) \tab
@@ -40,5 +31,6 @@ These columns are expected in the covariates object: \tabular{lll}{ \verb{rowId}
 Row ID is used to link multiple covariates (x) to a single outcome (y) \cr \verb{covariateId}
 \tab(integer) \tab A numeric identifier of a covariate \cr \verb{covariateValue} \tab(real) \tab
 The value of the specified covariate \cr }
+
 Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 }

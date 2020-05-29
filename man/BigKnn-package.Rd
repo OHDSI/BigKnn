@@ -20,5 +20,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Martijn Schuemie \email{schuemie@ohdsi.org}
 
+Authors:
+\itemize{
+  \item Jenna Reps \email{jreps@its.jnj.com}
+}
+
 }
 \keyword{internal}

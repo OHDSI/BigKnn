@@ -19,13 +19,11 @@
 #' @description
 #' \code{predictKnn} uses a KNN classifier to generate predictions.
 #'
-#' @param covariateData -too add-
-#' @param cohorts        -too add-
+#' @param covariates     An Andromeda table containing the covariates with predefined columns (see below).
+#' @param cohorts        An Andromeda table containing the cohorts with predefined columns (see below).
 #' @param indexFolder    Path to a local folder where the KNN classifier index can be stored.
 #' @param k              The number of nearest neighbors to use to predict the outcome.
 #' @param weighted       Should the prediction be weighted by the (inverse of the ) distance metric?
-#' @param checkSorting   Check if the data are sorted appropriately, and if not, sort.
-#' @param quiet          If true, (warning) messages are surpressed.
 #' @param threads        Number of parallel threads to used for the computation.
 #'
 #' @details
@@ -43,31 +41,16 @@
 #' between 0 and 1 representing the probability of the outcome \cr }
 #'
 #' @export
-predictKnn <- function(covariateData,
-                       cohorts,
+predictKnn <- function(cohorts,
+                       covariates,
                        indexFolder,
                        k = 1000,
                        weighted = TRUE,
-                       checkSorting = TRUE,
-                       quiet = FALSE,
                        threads = 1) {
   start <- Sys.time()
+
   
-  tempData <- andromeda(covariates = covariateData$covariates,
-                        cohorts = cohorts)
   
-  if (checkSorting) {
-    if (!quiet) {
-      writeLines("Sorting covariates by rowId")
-    }
-    #rownames(covariates) <- NULL  #Needs to be null or the ordering of ffdf will fail
-    tempData$covariatesSorted <- tempData$covariates %>% dplyr::arrange(desc(rowId))
-    tempData$covariates <- NULL
-    tempData$covariates <- tempData$covariatesSorted
-    tempData$covariatesSorted <- NULL
-    #covariates <- covariates[ff::ffdforder(covariates[c("rowId")]), ]
-    
-  }
   
   predictionThread <- function(rowIds, indexFolder, k, weighted){
     result <- Andromeda::groupApply(tempData$covariates %>% dplyr::filter(rowId %in% rowIds),

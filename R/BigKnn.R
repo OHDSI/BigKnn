@@ -22,5 +22,7 @@
 "_PACKAGE"
 
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom rlang .data
+#' @import dplyr
 NULL
 
