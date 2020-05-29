@@ -1,3 +1,15 @@
+BigKnn 1.0.0
+============
+
+Changes:
+
+1. Switching from ff to Andromeda.
+
+2. Upgrading to latest version of Lucene.
+
+3, No longer requiring sorting of input.
+
+
 BigKnn 0.0.3
 ============
 

@@ -25,3 +25,4 @@ unlink("extras/BigKnn.pdf")
 shell("R CMD Rd2pdf ./ --output=extras/BigKnn.pdf")
 
 pkgdown::build_site()
+OhdsiRTools::fixHadesLogo()

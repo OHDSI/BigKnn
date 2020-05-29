@@ -5,14 +5,19 @@
 \title{Create predictive probabilities using KNN.}
 \usage{
 predictKnnUsingPlpData(
+  plpData,
+  population,
   indexFolder,
   k = 1000,
   weighted = TRUE,
-  threads = 10,
-  plpData
+  threads = 10
 )
 }
 \arguments{
+\item{plpData}{An object of type \code{plpData} as generated using \code{getDbPlpData}.}
+
+\item{population}{The population to predict for.}
+
 \item{indexFolder}{Path to a local folder where the KNN classifier index is be stored.}
 
 \item{k}{The number of nearest neighbors to use to predict the outcome.}
@@ -20,8 +25,6 @@ predictKnnUsingPlpData(
 \item{weighted}{Should the prediction be weigthed by the (inverse of the ) distance metric?}
 
 \item{threads}{Number of parallel threads to used for the computation.}
-
-\item{plpData}{An object of type \code{plpData} as generated using \code{getDbPlpData}.}
 }
 \value{
 The value column in the result data.frame is: logistic: probabilities of the outcome, poisson:

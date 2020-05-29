@@ -16,7 +16,7 @@ buildKnnFromPlpData(
 \arguments{
 \item{plpData}{An object of type \code{plpData}.}
 
-\item{population}{The population}
+\item{population}{The population.}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 

@@ -33,7 +33,6 @@
 #' The value of the specified covariate \cr } This column is expected in the covariates object:
 #' \tabular{lll}{ \verb{rowId} \tab(integer) \tab Row ID is used to link multiple covariates (x) to a
 #' single outcome (y) \cr }
-#' Note: If checkSorting is turned off, the covariate table should be sorted by rowId.
 #'
 #' @return
 #' A data.frame with two columns: \tabular{lll}{ \verb{rowId} \tab(integer) \tab Row ID is used to

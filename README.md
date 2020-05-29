@@ -4,6 +4,7 @@ BigKnn
 [![Build Status](https://travis-ci.org/OHDSI/BigKnn.svg?branch=master)](https://travis-ci.org/OHDSI/BigKnn)
 [![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
 
+BigKnn is part of [HADES](https://ohdsi.github.io/Hades).
 
 Introduction
 ============
@@ -24,14 +25,18 @@ covariates <- data.frame(rowIds = c(1,1,1,2,2,3),
 
 outcomes <- data.frame(rowIds = c(1,2,3),
                        y = c(1,0,0))
+					   
+dataForPrediction <- Andromeda::andromeda(covariates = covariates, 
+                                          outcomes = outcomes)
 
 indexFolder <- "s:/temp/lucene"
 
-buildKnn(outcomes = ff::as.ffdf(outcomes),
-         covariates = ff::as.ffdf(covariates),
+buildKnn(outcomes = dataForPrediction$outcomes,
+         covariates = dataForPrediction$covariates,
          indexFolder = indexFolder)
 
-prediction <- predictKnn(covariates = ff::as.ffdf(covariates),
+prediction <- predictKnn(outcomes = dataForPrediction$outcomes,
+                         covariates = dataForPrediction$covariates,
                          indexFolder = indexFolder,
                          k = 10,
                          weighted = TRUE)
@@ -43,11 +48,7 @@ BigKnn is an R package using the Java based [Lucene](https://lucene.apache.org/)
 
 System Requirements
 ===================
-Requires R. Also requires Java 1.7 or higher (Oracle Java is recommended) .
-
-Dependencies
-============
-Please note that this package requires Java to be installed. If you don't have Java already installed on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.
+Running the package requires R with the package rJava installed. Also requires Java 1.8 or higher.
 
 Installation
 =============
@@ -61,12 +62,19 @@ install.packages("BigKnn")
 
 User Documentation
 ==================
+Documentation can be found on the [package website](https://ohdsi.github.io/BigKnn).
+
+PDF versions of the documentation are also available:
 * Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/BigKnn/master/extras/BigKnn.pdf) 
 
 Support
 =======
 * Developer questions/comments/feedback: <a href="http://forums.ohdsi.org/c/developers">OHDSI Forum</a>
 * We use the <a href="https://github.com/OHDSI/BigKnn/issues">GitHub issue tracker</a> for all bugs/issues/enhancements
+
+Contributing
+============
+Read [here](https://ohdsi.github.io/Hades/contribute.html) how you can contribute to this package.
 
 License
 =======
@@ -78,4 +86,4 @@ BigKnn is being developed in R Studio and Eclipse
 
 ### Development status
 
-Under development. Use at your own risk.
+Beta version. Ready for testing.
