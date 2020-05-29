@@ -5,3 +5,8 @@ R/LocalEnvironment.R
 deploy.sh
 .classpath
 .project
+docs
+compare_versions
+_pkgdown.yml
+extras
+java-src
