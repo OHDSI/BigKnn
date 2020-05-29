@@ -17,7 +17,7 @@
 #' Build a K-nearest neighbor (KNN) classifier from a plpData object
 #'
 #' @param plpData          An object of type \code{plpData}.
-#' @param population       The population 
+#' @param population       The population. 
 #' @param indexFolder      Path to a local folder where the KNN classifier index can be stored.
 #' @param overwrite        Automatically overwrite if an index already exists?
 #' @param cohortId         The ID of the specific cohort for which to fit a model.
@@ -31,14 +31,19 @@ buildKnnFromPlpData <- function(plpData,
                                 cohortId = NULL,
                                 outcomeId = NULL) {
 
-  # Merge outcomes with cohorts so we also have the subjects with 0 outcomes:
   population$y <- 1
-  population$y[population$outcomeCount==0] <- 0
+  population$y[population$outcomeCount == 0] <- 0
+  tempAndromeda <- Andromeda::andromeda(population = population)
   
-  buildKnn(population = population,
-           covariateData = covariateData,
+  covariates <- covariateData$covariates %>%
+    filter(.data$rowId %in% local(population$rowId))
+  
+  buildKnn(outcomes = tempAndromeda$population,
+           covariates = covariates,
            indexFolder = indexFolder,
            overwrite = overwrite)
+  
+  close(tempAndromeda)
 
   invisible(indexFolder)
 }
@@ -52,25 +57,29 @@ buildKnnFromPlpData <- function(plpData,
 #' The value column in the result data.frame is: logistic: probabilities of the outcome, poisson:
 #' Poisson rate (per day) of the outcome, survival: hazard rate (per day) of the outcome.
 #'
+#' @param plpData       An object of type \code{plpData} as generated using \code{getDbPlpData}.
+#' @param population    The population to predict for.
 #' @param indexFolder   Path to a local folder where the KNN classifier index is be stored.
 #' @param k             The number of nearest neighbors to use to predict the outcome.
 #' @param weighted      Should the prediction be weigthed by the (inverse of the ) distance metric?
 #' @param threads       Number of parallel threads to used for the computation.
-#' @param plpData       An object of type \code{plpData} as generated using \code{getDbPlpData}.
+
 #' @export
-predictKnnUsingPlpData <- function(indexFolder, k = 1000, weighted = TRUE, threads = 10, plpData) {
+predictKnnUsingPlpData <- function(plpData, population, indexFolder, k = 1000, weighted = TRUE, threads = 10) {
 
-  covariateData <- plpData$covariateData
-  cohorts <- plpData$cohorts
-
-  prediction <- predictKnn(covariateData = covariateData,
-                           cohorts = cohorts,
+  tempAndromeda <- Andromeda::andromeda(population = population)
+  
+  covariates <- covariateData$covariates %>%
+    filter(.data$rowId %in% local(population$rowId))
+  
+  prediction <- predictKnn(cohorts = tempAndromeda$population,
+                           covariates = covariates,
                            indexFolder = indexFolder,
                            k = k,
                            weighted = weighted,
                            threads = threads)
+  
+  close(tempAndromeda)
+  
   return(prediction)
 }
-
-
-
