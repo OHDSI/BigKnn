@@ -35,7 +35,7 @@ buildKnnFromPlpData <- function(plpData,
   population$y[population$outcomeCount == 0] <- 0
   tempAndromeda <- Andromeda::andromeda(population = population)
   
-  covariates <- covariateData$covariates %>%
+  covariates <- plpData$covariateData$covariates %>%
     filter(.data$rowId %in% local(population$rowId))
   
   buildKnn(outcomes = tempAndromeda$population,
@@ -69,7 +69,7 @@ predictKnnUsingPlpData <- function(plpData, population, indexFolder, k = 1000, w
 
   tempAndromeda <- Andromeda::andromeda(population = population)
   
-  covariates <- covariateData$covariates %>%
+  covariates <- plpData$covariateData$covariates %>%
     filter(.data$rowId %in% local(population$rowId))
   
   prediction <- predictKnn(cohorts = tempAndromeda$population,

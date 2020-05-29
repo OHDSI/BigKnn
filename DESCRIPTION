@@ -5,13 +5,13 @@ Version: 1.0.0
 Date: 2020-05-28
 Authors@R: c(
 	person("Martijn", "Schuemie", , "schuemie@ohdsi.org", role = c("aut", "cre")),
-	person("Jenna", "Reps", email = "jreps@its.jnj.com", role = c("aut"))
+	person("Jenna", "Reps", email = "jreps@its.jnj.com", role = c("aut")),
+	person("Observational Health Data Science and Informatics", role = c("cph"))
 	)
 Maintainer: Martijn Schuemie <schuemie@ohdsi.org>
 Description: A large scale k-nearest neighbor classifier using the Lucene search engine.
 Imports:
 	rJava,
-	ParallelLogger,
 	Andromeda (>= 0.3.0),
 	dplyr,
 	rlang
