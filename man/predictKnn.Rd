@@ -5,30 +5,24 @@
 \title{Predict using a K-nearest neighbor (KNN) classifier}
 \usage{
 predictKnn(
-  covariateData,
   cohorts,
+  covariates,
   indexFolder,
   k = 1000,
   weighted = TRUE,
-  checkSorting = TRUE,
-  quiet = FALSE,
   threads = 1
 )
 }
 \arguments{
-\item{covariateData}{-too add-}
+\item{cohorts}{An Andromeda table containing the cohorts with predefined columns (see below).}
 
-\item{cohorts}{-too add-}
+\item{covariates}{An Andromeda table containing the covariates with predefined columns (see below).}
 
 \item{indexFolder}{Path to a local folder where the KNN classifier index can be stored.}
 
 \item{k}{The number of nearest neighbors to use to predict the outcome.}
 
 \item{weighted}{Should the prediction be weighted by the (inverse of the ) distance metric?}
-
-\item{checkSorting}{Check if the data are sorted appropriately, and if not, sort.}
-
-\item{quiet}{If true, (warning) messages are surpressed.}
 
 \item{threads}{Number of parallel threads to used for the computation.}
 }

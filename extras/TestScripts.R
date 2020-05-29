@@ -1,14 +1,14 @@
 library(BigKnn)
-options(andromedaTempFolder = "s:/andromedaTemp")
+options(andromedaTempFolder = "c:/andromedaTemp")
 
-covariates <- data.frame(rowIds = c(1, 1, 1, 2, 2, 3),
-                         covariateIds = c(10, 11, 12, 10, 11, 12),
-                         covariateValues = c(1, 1, 1, 1, 1, 1))
-cohorts <- data.frame(rowIds = c(1, 2, 3))
+covariates <- data.frame(rowId = c(1, 1, 1, 2, 2, 3),
+                         covariateId = c(10, 11, 12, 10, 11, 12),
+                         covariateValue = c(1, 1, 1, 1, 1, 1))
+cohorts <- data.frame(rowId = c(1, 2, 3))
 
-outcomes <- data.frame(rowIds = c(1, 2, 3), y = c(1, 0, 0))
+outcomes <- data.frame(rowId = c(1, 2, 3), y = c(1, 0, 0))
 
-indexFolder <- "s:/temp/bigKnn"
+indexFolder <- "c:/temp/bigKnn"
 unlink(indexFolder)
 covariateData <- Andromeda::andromeda(covariates = covariates, 
                                       outcomes = outcomes,
@@ -20,8 +20,8 @@ buildKnn(outcomes = covariateData$outcomes,
          indexFolder = indexFolder)
 
 
-prediction <- predictKnn(covariates = ff::as.ffdf(covariates),
-                         cohorts = ff::as.ffdf(cohorts),
+prediction <- predictKnn(cohorts = covariateData$cohorts, 
+                         covariates = covariateData$covariates, 
                          indexFolder = indexFolder,
                          k = 10,
                          weighted = TRUE)

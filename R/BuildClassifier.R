@@ -61,16 +61,14 @@ buildKnn <- function(outcomes,
   Andromeda::batchApply(nonZeroOutcomeRows, addOutcomes)
   
   addCovariatesToJava <- function(batch) {
-    knn$addCovariates(rJava::.jarray(as.double(as.character(batch$rowId))),
+    knn$addCovariates(as.double(as.character(batch$rowId[1])),
                       rJava::.jarray(as.double(as.character(batch$covariateId))),
                       rJava::.jarray(as.double(as.character(batch$covariateValue))))
   }
-  sortedCovariates <- covariates %>%
-    arrange(.data$rowId)
-  
-  Andromeda::batchApply(tbl = sortedCovariates, 
+
+  Andromeda::groupApply(tbl = covariates, 
+                        "rowId",
                         fun = addCovariatesToJava,
-                        batchSize = 100000,
                         showProgressBar = TRUE)
   
   knn$finalizeWriting()

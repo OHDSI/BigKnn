@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
@@ -31,35 +34,25 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
 
 public class LuceneKnn {
-	
-	private String				indexFolder;
-	private IndexSearcher		searcher;
-	private IndexWriter			writer;
-	private DirectoryReader		reader;
-	private WhitespaceAnalyzer	analyzer	= new WhitespaceAnalyzer();
-	// private Similarity similarity = new LMJelinekMercerSimilarity(0.5f);
-	private Similarity			similarity	= new ClassicSimilarity();
-	private CovariateVector		cache;
-	private Set<Long>			nonZeroOutcomes;
-	private int					k			= 100;
-	private boolean				weighted	= true;
-	private FieldType			docAndFreqIndexed;
-	
+
+	private String indexFolder;
+	private IndexSearcher searcher;
+	private IndexWriter writer;
+	private DirectoryReader reader;
+	private WhitespaceAnalyzer analyzer = new WhitespaceAnalyzer();
+	private Similarity similarity = new ClassicSimilarity();
+	private Set<Long> nonZeroOutcomes;
+	private int k = 100;
+	private boolean weighted = true;
+	private FieldType docAndFreqIndexed;
+	private ExecutorService pool;
+	private List<Prediction> predictions;
+	private ReentrantLock lock = new ReentrantLock();
+
 	public LuceneKnn(String indexFolder) {
 		this.indexFolder = indexFolder;
 	}
-	
-	public void openForReading() {
-		try {
-			FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath(indexFolder));
-			reader = DirectoryReader.open(dir);
-			searcher = new IndexSearcher(reader);
-			searcher.setSimilarity(similarity);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+
 	public void openForWriting(boolean overwrite) {
 		try {
 			if (new File(indexFolder).exists()) {
@@ -79,7 +72,7 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 		nonZeroOutcomes = new HashSet<Long>();
-		
+
 		docAndFreqIndexed = new FieldType();
 		docAndFreqIndexed.setOmitNorms(false);
 		docAndFreqIndexed.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
@@ -87,7 +80,7 @@ public class LuceneKnn {
 		docAndFreqIndexed.setTokenized(true);
 		docAndFreqIndexed.freeze();
 	}
-	
+
 	public void close() {
 		try {
 			if (writer != null)
@@ -99,73 +92,19 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public void addNonZeroOutcomes(double[] rowIds) {
 		for (int i = 0; i < rowIds.length; i++)
 			nonZeroOutcomes.add(Math.round(rowIds[i]));
 	}
-	
-	public void addCovariates(double[] rowIds, double[] covariateIds, double[] covariateValues) {
-		if (rowIds.length == 0)
-			return;
-		if (nonZeroOutcomes.size() == 0)
-			throw new RuntimeException("No outcomes found. Please load the outcomes before loading the covariates.");
-		
-		int cursor = 0;
-		int start = 0;
-		
-		// Check to see if anythings left in the cache from the previous round:
-		if (cache != null) {
-			while (rowIds[cursor] == cache.rowId)
-				cursor++;
-			double[] tempCovariateIds = new double[cache.covariateIds.length + cursor];
-			double[] tempCovariateValues = new double[cache.covariateValues.length + cursor];
-			System.arraycopy(cache.covariateIds, 0, tempCovariateIds, 0, cache.covariateIds.length);
-			System.arraycopy(cache.covariateValues, 0, tempCovariateValues, 0, cache.covariateValues.length);
-			if (cursor > 0) {
-				System.arraycopy(covariateIds, 0, tempCovariateIds, 0, cursor);
-				System.arraycopy(covariateValues, 0, tempCovariateValues, 0, cursor);
-			}
-			addDoc(cache.rowId, tempCovariateIds, tempCovariateValues, 0, tempCovariateIds.length);
-			cache = null;
-			start = cursor;
-		}
-		double rowId = rowIds[cursor];
-		while (cursor < covariateIds.length) {
-			if (rowIds[cursor] != rowId) {
-				addDoc(rowId, covariateIds, covariateValues, start, cursor);
-				start = cursor;
-				rowId = rowIds[cursor];
-			}
-			cursor++;
-		}
-		cache = new CovariateVector();
-		cache.rowId = rowId;
-		cache.covariateIds = new double[cursor - start];
-		cache.covariateValues = new double[cursor - start];
-		System.arraycopy(covariateIds, start, cache.covariateIds, 0, cursor - start);
-		System.arraycopy(covariateValues, start, cache.covariateValues, 0, cursor - start);
-	}
-	
-	public void finalizeWriting() {
-		addDoc(cache.rowId, cache.covariateIds, cache.covariateValues, 0, cache.covariateIds.length);
-		nonZeroOutcomes = null;
-		try {
-			writer.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		writer = null;
-		System.gc();
-	}
-	
-	private void addDoc(double rowId, double[] covariateIds, double[] covariateValues, int start, int end) {
+
+	public void addCovariates(double rowId, double[] covariateIds, double[] covariateValues) {
 		try {
 			long rowIdLong = Math.round(rowId);
 			Document doc = new Document();
-			doc.add(new LongField("rowId", rowIdLong, Store.YES));
+			doc.add(new StringField("rowId", Long.toString(rowIdLong), Field.Store.YES));
 			StringBuilder string = new StringBuilder();
-			for (int i = start; i < end; i++) {
+			for (int i = 0; i < covariateIds.length; i++) {
 				for (int j = 0; j < Math.round(covariateValues[i]); j++) {
 					string.append(Math.round(covariateIds[i]));
 					string.append(' ');
@@ -179,76 +118,63 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public double[][] predict(double[] rowIds, double[] covariateIds, double[] covariateValues) {
-		if (rowIds.length == 0)
-			return new double[][] { new double[0], new double[0] };
-		
-		List<Double> outRowIds = new ArrayList<Double>();
-		List<Double> outPredictions = new ArrayList<Double>();
-		
-		int cursor = 0;
-		int start = 0;
-		
-		// Check to see if anythings left in the cache from the previous round:
-		if (cache != null) {
-			while (rowIds[cursor] == cache.rowId)
-				cursor++;
-			double[] tempCovariateIds = new double[cache.covariateIds.length + cursor];
-			double[] tempCovariateValues = new double[cache.covariateValues.length + cursor];
-			System.arraycopy(cache.covariateIds, 0, tempCovariateIds, 0, cache.covariateIds.length);
-			System.arraycopy(cache.covariateValues, 0, tempCovariateValues, 0, cache.covariateValues.length);
-			if (cursor > 0) {
-				System.arraycopy(covariateIds, 0, tempCovariateIds, 0, cursor);
-				System.arraycopy(covariateValues, 0, tempCovariateValues, 0, cursor);
-			}
-			outRowIds.add(cache.rowId);
-			double prediction = predictDoc(tempCovariateIds, tempCovariateValues, 0, tempCovariateIds.length);
-			outPredictions.add(prediction);
-			cache = null;
-			start = cursor;
+
+	public void finalizeWriting() {
+		nonZeroOutcomes = null;
+		try {
+			writer.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		double rowId = rowIds[cursor];
-		while (cursor < covariateIds.length) {
-			if (rowIds[cursor] != rowId) {
-				outRowIds.add(rowId);
-				double prediction = predictDoc(covariateIds, covariateValues, start, cursor);
-				outPredictions.add(prediction);
-				start = cursor;
-				rowId = rowIds[cursor];
-			}
-			cursor++;
-		}
-		cache = new CovariateVector();
-		cache.rowId = rowId;
-		cache.covariateIds = new double[cursor - start];
-		cache.covariateValues = new double[cursor - start];
-		System.arraycopy(covariateIds, start, cache.covariateIds, 0, cursor - start);
-		System.arraycopy(covariateValues, start, cache.covariateValues, 0, cursor - start);
-		double[][] result = new double[][] { new double[outRowIds.size()], new double[outPredictions.size()] };
-		for (int i = 0; i < outRowIds.size(); i++) {
-			result[0][i] = outRowIds.get(i);
-			result[1][i] = outPredictions.get(i);
-		}
-		return result;
+		writer = null;
+		System.gc();
 	}
-	
-	public double[][] finalizePredict() {
-		double prediction = predictDoc(cache.covariateIds, cache.covariateValues, 0, cache.covariateIds.length);
-		double rowId = cache.rowId;
-		cache = null;
+
+	public void initPrediction(int threads) {
+		pool = new ForkJoinPool(threads);
+		try {
+			FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath(indexFolder));
+			reader = DirectoryReader.open(dir);
+			searcher = new IndexSearcher(reader, pool);
+			searcher.setSimilarity(similarity);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		predictions = new ArrayList<Prediction>();
+	}
+
+	public void predict(double rowId, double[] covariateIds, double[] covariateValues) {
+		CovariateVector covariateVector = new CovariateVector();
+		covariateVector.rowId = rowId;
+		covariateVector.covariateIds = covariateIds;
+		covariateVector.covariateValues = covariateValues;
+		pool.execute(new PredictionTask(covariateVector));
+	}
+
+	public double[][] getPredictions() {
+		try {
+			pool.awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		try {
 			reader.close();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		double[][] result = new double[][] { new double[predictions.size()], new double[predictions.size()] };
+		for (int i = 0; i < predictions.size(); i++) {
+			Prediction prediction = predictions.get(i);
+			result[0][i] = prediction.rowId;
+			result[1][i] = prediction.value;
+		}
 		System.gc();
-		return new double[][] { new double[] { rowId }, new double[] { prediction } };
+		return result;
 	}
-	
-	private double predictDoc(double[] covariateIds, double[] covariateValues, int start, int end) {
+
+	private double predictDoc(double[] covariateIds, double[] covariateValues) {
 		try {
-			TopScoreDocCollector collector = TopScoreDocCollector.create(getK());
+			TopScoreDocCollector collector = TopScoreDocCollector.create(getK(), getK());
 			MoreLikeThis mlt = new MoreLikeThis(searcher.getIndexReader());
 			mlt.setMinTermFreq(0);
 			mlt.setFieldNames(new String[] { "covariates" });
@@ -257,7 +183,7 @@ public class LuceneKnn {
 			mlt.setAnalyzer(analyzer);
 			mlt.setMinDocFreq(0);
 			StringBuilder string = new StringBuilder();
-			for (int i = start; i < end; i++) {
+			for (int i = 0; i < covariateIds.length; i++) {
 				for (int j = 0; j < Math.round(covariateValues[i]); j++) {
 					string.append(Math.round(covariateIds[i]));
 					string.append(' ');
@@ -288,34 +214,59 @@ public class LuceneKnn {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public String getIndexFolder() {
 		return indexFolder;
 	}
-	
+
 	public void setIndexFolder(String indexFolder) {
 		this.indexFolder = indexFolder;
 	}
-	
+
 	public int getK() {
 		return k;
 	}
-	
+
 	public void setK(int k) {
 		this.k = k;
 	}
-	
+
 	public boolean isWeighted() {
 		return weighted;
 	}
-	
+
 	public void setWeighted(boolean weighted) {
 		this.weighted = weighted;
 	}
-	
+
 	private class CovariateVector {
-		public double[]	covariateIds;
-		public double[]	covariateValues;
-		public double	rowId;
+		public double[] covariateIds;
+		public double[] covariateValues;
+		public double rowId;
+	}
+
+	private class Prediction {
+		public double value;
+		public double rowId;
+	}
+	
+	private class PredictionTask implements Runnable {
+
+		private CovariateVector covariateVector;
+
+		public PredictionTask(CovariateVector covariateVector) {
+			this.covariateVector = covariateVector;
+		}
+
+		@Override
+		public void run() {
+			double value = predictDoc(covariateVector.covariateIds, covariateVector.covariateValues);
+			Prediction prediction = new Prediction();
+			prediction.rowId = covariateVector.rowId;
+			prediction.value = value;
+			lock.lock();
+			predictions.add(prediction);
+			lock.unlock();
+		}
 	}
 }
