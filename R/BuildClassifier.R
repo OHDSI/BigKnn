@@ -69,7 +69,7 @@ buildKnn <- function(outcomes,
   Andromeda::groupApply(tbl = covariates, 
                         "rowId",
                         fun = addCovariatesToJava,
-                        showProgressBar = TRUE)
+                        progressBar = TRUE)
   
   knn$finalizeWriting()
   

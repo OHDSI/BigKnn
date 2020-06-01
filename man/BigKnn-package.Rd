@@ -25,5 +25,10 @@ Authors:
   \item Jenna Reps \email{jreps@its.jnj.com}
 }
 
+Other contributors:
+\itemize{
+  \item Observational Health Data Science and Informatics [copyright holder]
+}
+
 }
 \keyword{internal}

@@ -62,7 +62,7 @@ predictKnn <- function(cohorts,
   Andromeda::groupApply(tbl = covariates, 
                         "rowId",
                         fun = predict,
-                        showProgressBar = TRUE)
+                        progressBar = TRUE)
   
   prediction <- knn$getPredictions()
   prediction <- lapply(prediction, rJava::.jevalArray)
