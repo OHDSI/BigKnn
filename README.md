@@ -52,13 +52,16 @@ Running the package requires R with the package rJava installed. Also requires J
 
 Installation
 =============
-Use the following commands in R to install the BigKnn package:
 
-```r
-install.packages("drat")
-drat::addRepo("OHDSI")
-install.packages("BigKnn")
-```
+1. See the instructions [here](https://ohdsi.github.io/Hades/rSetup.html) for configuring your R environment, including Java.
+
+2. Use the following commands in R to install the BigKnn package:
+
+  ```r
+  install.packages("drat")
+  drat::addRepo("OHDSI")
+  install.packages("BigKnn")
+  ```
 
 User Documentation
 ==================
