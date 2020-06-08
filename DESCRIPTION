@@ -17,8 +17,6 @@ Imports:
 	rlang
 Suggests:
   testthat
-Remotes:
-  ohdsi/Andromeda
 License: Apache License
 RoxygenNote: 7.1.0
 URL: https://ohdsi.github.io/BigKnn, https://github.com/OHDSI/BigKnn
