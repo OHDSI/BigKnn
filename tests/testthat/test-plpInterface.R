@@ -15,12 +15,14 @@ populationPred <- data.frame(rowId = n+1)
 # person 11 is similar as person 1/3/5
 
 covariatesBuild <- data.frame(rowId = sample(populationBuild$rowId, size = 1000, replace = T),
-                         covariateId = sample(10, 1000, replace = T),
+                         #covariateId = sample(10, 1000, replace = T),
+                         covariateId = c(rep(1,100),rep(2,100),rep(3,100),rep(4,100),rep(5,100),
+                           rep(6,100),rep(7,100),rep(8,100),rep(9,100),rep(10,100)),
                          covariateValue = rep(1, 1000))
 covariatesBuild <- unique(covariatesBuild)
-covariatesPred <- data.frame(rowId = rep(n+1, 10),
-                              covariateId = sample(10, 10, replace = T),
-                              covariateValue = rep(1, 10))
+covariatesPred <- data.frame(rowId = rep(n+1, 5),
+                              covariateId = sample(10, 5, replace = T),
+                              covariateValue = rep(1, 5))
 covariatesPred <- unique(covariatesPred)
 
 covariates <- rbind(covariatesBuild, covariatesPred)
@@ -44,15 +46,34 @@ covariatesMat <- matrix(nrow =n+1, ncol = 10, data = rep(0, 10*(n+1)))
 for(i in 1:nrow(covariates)){
   covariatesMat[covariates$rowId[i], covariates$covariateId[i]] <- 1
 }
-distance <- dist(covariatesMat)
-
-# get the predicted risk for the test when k = 2
-##mean(populationBuild$outcomeCount[populationBuild$rowId%in%order(as.matrix(distance)[n+1,1:n])[1:2]])
-
-# get the predicted risk for the test when k = 3
-##mean(populationBuild$outcomeCount[populationBuild$rowId%in%order(as.matrix(distance)[n+1,1:n])[1:3]])
 
 
+
+# euclidean distance
+distancEuclidean <- stats::dist(covariatesMat)
+
+# manhattan distance
+distancManhattan <- stats::dist(covariatesMat, method = 'manhattan')
+
+# cosine similarity distance
+cosineSim <- function(covariatesMat){
+cos.sim <- function(ix) 
+{
+  A = covariatesMat[ix[1],]
+  B = covariatesMat[ix[2],]
+  return( sum(A*B)/sqrt(sum(A^2)*sum(B^2)) )
+}   
+cmb <- expand.grid(i=1:nrow(covariatesMat), j=1:nrow(covariatesMat)) 
+C <- matrix(apply(cmb,1,cos.sim),nrow(covariatesMat),nrow(covariatesMat))
+distance <- abs(1-C)
+distance[is.nan(distance)] <- 1
+return(distance)
+}
+distanceCosine <- cosineSim(covariatesMat)
+
+
+distance <- distanceCosine
+#distance <- distancManhattan
 
 test_that("buildKnnFromPlpData works when test patient not in plpData works", {
   
@@ -81,13 +102,13 @@ test_that("buildKnnFromPlpData unweighted predictions correct", {
   
   # get the predicted risk for the test when k = 1
   # find k near 1 based on ties
-  val <-max(as.matrix(distance)[n+1,order(as.matrix(distance)[n+1,1:n])[1]])
+  val <- max(as.matrix(distance)[n+1,order(as.matrix(distance)[n+1,1:n])[1]])
   k <- sum(as.matrix(distance)[n+1,1:n]<=val)
   
   pred1 <- predictKnnUsingPlpData(plpData = plpData, 
                                  population = populationPred, 
                                  indexFolder = indexFolder, 
-                                 k =k, 
+                                 k = k, 
                                  weighted = F, 
                                  threads = 1)
   
