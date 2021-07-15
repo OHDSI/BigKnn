@@ -1,5 +1,7 @@
 library(testthat)
 
+context("basics")
+
 # Test init
 indexFolder <- tempfile("indexFolder")
 
