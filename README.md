@@ -1,7 +1,7 @@
 BigKnn
 ======
 
-[![Build Status](https://travis-ci.org/OHDSI/BigKnn.svg?branch=master)](https://travis-ci.org/OHDSI/BigKnn)
+[![Build Status](https://github.com/OHDSI/BigKnn/workflows/R-CMD-check/badge.svg)](https://github.com/OHDSI/BigKnn/actions?query=workflow%3AR-CMD-check)
 [![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
 
 BigKnn is part of [HADES](https://ohdsi.github.io/Hades).
