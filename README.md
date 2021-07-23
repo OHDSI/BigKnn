@@ -58,9 +58,8 @@ Installation
 2. Use the following commands in R to install the BigKnn package:
 
   ```r
-  install.packages("drat")
-  drat::addRepo("OHDSI")
-  install.packages("BigKnn")
+  install.packages("remotes")
+  remotes::install_github("ohdsi/BigKnn")
   ```
 
 User Documentation
@@ -89,4 +88,4 @@ BigKnn is being developed in R Studio and Eclipse
 
 ### Development status
 
-Beta version. Ready for testing.
+Stable.

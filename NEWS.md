@@ -1,3 +1,11 @@
+BigKnn 1.0.1
+============
+
+Changes:
+
+1. Added unit tests.
+
+
 BigKnn 1.0.0
 ============
 
