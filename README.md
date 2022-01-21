@@ -2,7 +2,7 @@ BigKnn
 ======
 
 [![Build Status](https://github.com/OHDSI/BigKnn/workflows/R-CMD-check/badge.svg)](https://github.com/OHDSI/BigKnn/actions?query=workflow%3AR-CMD-check)
-[![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/BigKnn?branch=master)
+[![codecov.io](https://codecov.io/github/OHDSI/BigKnn/coverage.svg?branch=main)](https://codecov.io/github/OHDSI/BigKnn?branch=main)
 
 BigKnn is part of [HADES](https://ohdsi.github.io/Hades).
 
@@ -67,7 +67,7 @@ User Documentation
 Documentation can be found on the [package website](https://ohdsi.github.io/BigKnn).
 
 PDF versions of the documentation are also available:
-* Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/BigKnn/master/extras/BigKnn.pdf) 
+* Package manual: [BigKnn manual](https://raw.githubusercontent.com/OHDSI/BigKnn/main/extras/BigKnn.pdf) 
 
 Support
 =======
