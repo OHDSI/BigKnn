@@ -44,7 +44,7 @@ buildKnnFromPlpData <- function(plpData,
            indexFolder = indexFolder,
            overwrite = overwrite)
   
-  close(tempAndromeda)
+  Andromeda::close(tempAndromeda)
 
   invisible(indexFolder)
 }
@@ -80,7 +80,7 @@ predictKnnUsingPlpData <- function(plpData, population, indexFolder, k = 1000, w
                            weighted = weighted,
                            threads = threads)
   
-  close(tempAndromeda)
+  Andromeda::close(tempAndromeda)
   
   return(prediction)
 }
