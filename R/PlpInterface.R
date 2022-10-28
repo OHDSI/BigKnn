@@ -37,9 +37,10 @@ buildKnnFromPlpData <- function(plpData,
   
   covariates <- plpData$covariateData$covariates %>%
     filter(.data$rowId %in% local(population$rowId))
+  tempAndromeda$covariates <- covariates
   
   buildKnn(outcomes = tempAndromeda$population,
-           covariates = covariates,
+           covariates = tempAndromeda$covariates,
            indexFolder = indexFolder,
            overwrite = overwrite)
   
