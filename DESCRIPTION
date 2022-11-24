@@ -1,8 +1,8 @@
 Package: BigKnn
 Type: Package
 Title: Large Scale K-Nearest Neighbor Classifier using the Lucene Search Engine
-Version: 1.0.1
-Date: 2021-07-23
+Version: 1.1.0
+Date: 2022-11-24
 Authors@R: c(
 	person("Martijn", "Schuemie", , "schuemie@ohdsi.org", role = c("aut", "cre")),
 	person("Jenna", "Reps", email = "jreps@its.jnj.com", role = c("aut")),
@@ -13,13 +13,15 @@ Description: A large scale k-nearest neighbor classifier using the Lucene search
 SystemRequirements: Java version 8 or higher (https://www.java.com/)
 Imports:
 	rJava,
-	Andromeda (>= 0.3.0),
+	Andromeda (>= 1.0.0),
 	dplyr,
 	rlang
 Suggests:
   testthat
+Remotes:
+  ohdsi/Andromeda@arrow_S4
 License: Apache License
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 URL: https://ohdsi.github.io/BigKnn, https://github.com/OHDSI/BigKnn
 BugReports: https://github.com/OHDSI/BigKnn/issues
 Encoding: UTF-8
