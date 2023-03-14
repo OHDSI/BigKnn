@@ -1,4 +1,4 @@
-# Copyright 2021 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of BigKnn
 #
@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Format and check code:
-OhdsiRTools::formatRFolder()
+styler::style_pkg()
 OhdsiRTools::checkUsagePackage("BigKnn")
 OhdsiRTools::updateCopyrightYearFolder()
 devtools::spell_check()
