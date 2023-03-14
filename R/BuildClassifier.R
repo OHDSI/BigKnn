@@ -41,9 +41,9 @@ buildKnn <- function(outcomes,
                      covariates,
                      indexFolder,
                      overwrite = TRUE) {
-  if (!inherits(outcomes, "tbl_dbi"))
+  if (!inherits(outcomes, "tbl_dbi") && !inherits(outcomes, "ArrowObject") && !inherits(outcomes, "arrow_dplyr_query"))
     stop("Outcomes argument must be an Andromeda (or DBI) table")
-  if (!inherits(covariates, "tbl_dbi"))
+  if (!inherits(covariates, "tbl_dbi") && !inherits(covariates, "ArrowObject") && !inherits(covariates, "arrow_dplyr_query"))
     stop("Covariates argument must be an Andromeda (or DBI) table")
   
   start <- Sys.time()

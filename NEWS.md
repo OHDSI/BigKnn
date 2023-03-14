@@ -1,3 +1,11 @@
+BigKnn 1.0.2
+============
+
+Changes:
+
+1. Added support for upcoming Andromeda version (using arrow).
+
+
 BigKnn 1.0.1
 ============
 
