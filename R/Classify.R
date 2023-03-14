@@ -1,13 +1,13 @@
 # Copyright 2021 Observational Health Data Sciences and Informatics
 #
 # This file is part of BigKnn
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,30 +52,34 @@ predictKnn <- function(cohorts,
   knn$setK(as.integer(k))
   knn$setWeighted(weighted)
   knn$initPrediction(as.integer(threads))
-  
+
   predict <- function(batch) {
-    knn$predict(as.double(as.character(batch$rowId[1])),
-                      rJava::.jarray(as.double(as.character(batch$covariateId))),
-                      rJava::.jarray(as.double(as.character(batch$covariateValue))))
+    knn$predict(
+      as.double(as.character(batch$rowId[1])),
+      rJava::.jarray(as.double(as.character(batch$covariateId))),
+      rJava::.jarray(as.double(as.character(batch$covariateValue)))
+    )
   }
-  
-  Andromeda::groupApply(tbl = covariates, 
-                        "rowId",
-                        fun = predict,
-                        progressBar = TRUE)
-  
+
+  Andromeda::groupApply(
+    tbl = covariates,
+    "rowId",
+    fun = predict,
+    progressBar = TRUE
+  )
+
   prediction <- knn$getPredictions()
   prediction <- lapply(prediction, rJava::.jevalArray)
   prediction <- tibble(rowId = prediction[[1]], value = prediction[[2]])
 
   # Add any rows with no covariate values:
-  toAdd <- cohorts %>% 
+  toAdd <- cohorts %>%
     filter(!.data$rowId %in% local(prediction$rowId)) %>%
     mutate(value = 0) %>%
     collect()
-  
+
   prediction <- bind_rows(prediction, toAdd)
-  
+
   delta <- Sys.time() - start
   writeLines(paste("Prediction took", signif(delta, 3), attr(delta, "units")))
   return(prediction)

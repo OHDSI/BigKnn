@@ -1,13 +1,13 @@
 # Copyright 2021 Observational Health Data Sciences and Informatics
 #
 # This file is part of BigKnn
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,38 +41,44 @@ buildKnn <- function(outcomes,
                      covariates,
                      indexFolder,
                      overwrite = TRUE) {
-  if (!inherits(outcomes, "tbl_dbi") && !inherits(outcomes, "ArrowObject") && !inherits(outcomes, "arrow_dplyr_query"))
+  if (!inherits(outcomes, "tbl_dbi") && !inherits(outcomes, "ArrowObject") && !inherits(outcomes, "arrow_dplyr_query")) {
     stop("Outcomes argument must be an Andromeda (or DBI) table")
-  if (!inherits(covariates, "tbl_dbi") && !inherits(covariates, "ArrowObject") && !inherits(covariates, "arrow_dplyr_query"))
+  }
+  if (!inherits(covariates, "tbl_dbi") && !inherits(covariates, "ArrowObject") && !inherits(covariates, "arrow_dplyr_query")) {
     stop("Covariates argument must be an Andromeda (or DBI) table")
-  
+  }
+
   start <- Sys.time()
-  
+
   knn <- rJava::new(rJava::J("org.ohdsi.bigKnn.LuceneKnn"), indexFolder)
   knn$openForWriting(overwrite)
-  
+
   addOutcomes <- function(batch) {
     knn$addNonZeroOutcomes(rJava::.jarray(as.double(batch$rowId)))
   }
-  
-  nonZeroOutcomeRows <- outcomes %>% 
+
+  nonZeroOutcomeRows <- outcomes %>%
     filter(.data$y == 1)
-  
+
   Andromeda::batchApply(nonZeroOutcomeRows, addOutcomes)
-  
+
   addCovariatesToJava <- function(batch) {
-    knn$addCovariates(as.double(as.character(batch$rowId[1])),
-                      rJava::.jarray(as.double(as.character(batch$covariateId))),
-                      rJava::.jarray(as.double(as.character(batch$covariateValue))))
+    knn$addCovariates(
+      as.double(as.character(batch$rowId[1])),
+      rJava::.jarray(as.double(as.character(batch$covariateId))),
+      rJava::.jarray(as.double(as.character(batch$covariateValue)))
+    )
   }
 
-  Andromeda::groupApply(tbl = covariates, 
-                        groupVariable = "rowId",
-                        fun = addCovariatesToJava,
-                        progressBar = TRUE)
-  
+  Andromeda::groupApply(
+    tbl = covariates,
+    groupVariable = "rowId",
+    fun = addCovariatesToJava,
+    progressBar = TRUE
+  )
+
   knn$finalizeWriting()
-  
+
   delta <- Sys.time() - start
   writeLines(paste("Building KNN index took", signif(delta, 3), attr(delta, "units")))
 }
