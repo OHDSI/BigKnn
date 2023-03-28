@@ -41,10 +41,10 @@ buildKnn <- function(outcomes,
                      covariates,
                      indexFolder,
                      overwrite = TRUE) {
-  if (!inherits(outcomes, "tbl_dbi") && !inherits(outcomes, "ArrowObject") && !inherits(outcomes, "arrow_dplyr_query")) {
+  if (!Andromeda::isAndromedaTable(outcomes)) {
     stop("Outcomes argument must be an Andromeda (or DBI) table")
   }
-  if (!inherits(covariates, "tbl_dbi") && !inherits(covariates, "ArrowObject") && !inherits(covariates, "arrow_dplyr_query")) {
+  if (!Andromeda::isAndromedaTable(covariates)) {
     stop("Covariates argument must be an Andromeda (or DBI) table")
   }
 
